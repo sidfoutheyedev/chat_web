@@ -1,0 +1,294 @@
+/* ================================================
+   ANIMATIONS.CSS — ChatSphere
+   All keyframe animations used across the site
+   ================================================ */
+
+/* ================================================
+   FADE ANIMATIONS
+   ================================================ */
+
+/* Fade in from transparent → visible */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Fade in and slide up — used for messages & cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade in and slide down — used for dropdowns */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade out */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ================================================
+   SLIDE ANIMATIONS
+   ================================================ */
+
+/* Slide up — used for modal box */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Slide in from right — used for notification prompt */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Toast slide in from left-bottom */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ================================================
+   PULSE & GLOW ANIMATIONS
+   ================================================ */
+
+/* Pulsing dot — used for online status indicator */
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.7;
+  }
+}
+
+/* Glow pulse — used for safe badge and buttons */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(16,185,129,0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(16,185,129,0.7);
+  }
+}
+
+/* Purple glow pulse */
+@keyframes purpleGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(124,58,237,0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(124,58,237,0.7);
+  }
+}
+
+/* Neon flicker — for accent text */
+@keyframes neonFlicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.6; }
+  94%       { opacity: 1; }
+  96%       { opacity: 0.7; }
+  97%       { opacity: 1; }
+}
+
+/* ================================================
+   FLOAT & ROTATE ANIMATIONS
+   ================================================ */
+
+/* Float up and down — used for hero visual card */
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* Slow spin — used for loading spinners */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Slow rotation — used for decorative background elements */
+@keyframes rotateSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ================================================
+   NUMBER COUNTER ANIMATION
+   ================================================ */
+
+/* Counter number appearing */
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.8) translateY(5px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ================================================
+   CHAT ANIMATIONS
+   ================================================ */
+
+/* Typing dots bounce — used in typing indicator */
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-8px); }
+}
+
+/* New message notification shake */
+@keyframes notifShake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+}
+
+/* ================================================
+   BACKGROUND ANIMATIONS
+   ================================================ */
+
+/* Grid background movement — used in hero */
+@keyframes gridMove {
+  from { background-position: 0 0; }
+  to   { background-position: 50px 50px; }
+}
+
+/* Particle float — used for decorative background dots */
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.4; }
+  100% {
+    transform: translateY(-100px) translateX(50px);
+    opacity: 0;
+  }
+}
+
+/* Background gradient shift */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ================================================
+   HELPER ANIMATION CLASSES
+   Apply these classes in HTML to trigger animations
+   ================================================ */
+
+/* Fade in on page load */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Fade in and slide up */
+.animate-fade-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Add delay variants */
+.delay-1 { animation-delay: 0.1s; opacity: 0; }
+.delay-2 { animation-delay: 0.2s; opacity: 0; }
+.delay-3 { animation-delay: 0.3s; opacity: 0; }
+.delay-4 { animation-delay: 0.4s; opacity: 0; }
+.delay-5 { animation-delay: 0.5s; opacity: 0; }
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* Loading spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* Pulsing skeleton loader */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-card) 25%,
+    var(--bg-card-hover) 50%,
+    var(--bg-card) 75%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Scroll reveal — activated by JS when element enters viewport */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

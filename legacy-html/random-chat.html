@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Chat - Talk to Strangers Free | ChatSphere</title>
+  <meta name="description" content="Start a free random chat with strangers instantly. No sign-up needed. Anonymous text chat with people from around the world on ChatSphere." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://chatsphere.com/random-chat.html" />
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/animations.css" />
+
+  <!-- Extra styles specific to chat page -->
+  <style>
+    /* Interest tag pills */
+    .interest-tag {
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .interest-tag.selected {
+      background: rgba(124,58,237,0.15);
+      border-color: var(--border-accent);
+      color: var(--purple-light);
+    }
+    /* Bottom of sidebar */
+    .chat-sidebar-footer {
+      margin-top: auto;
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--border);
+    }
+    /* Chat input auto-resize */
+    #message-input {
+      overflow-y: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Age Gate Modal -->
+  <div id="age-gate-overlay" class="age-gate-overlay" style="display:none;">
+    <div class="age-gate-box">
+      <div class="age-gate-icon">🔞</div>
+      <h2>Adults Only (18+)</h2>
+      <p>ChatSphere is for adults only. By entering, you confirm you are <strong>18 or older</strong> and agree to our <a href="/terms-conditions.html">Terms</a> and <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+      <div class="age-gate-buttons">
+        <button id="age-gate-enter" class="btn btn-primary btn-lg">✅ I'm 18 or older — Enter</button>
+        <button id="age-gate-exit"  class="btn btn-ghost">I'm under 18</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Push Notification Prompt -->
+  <div id="notif-prompt" class="notif-prompt">
+    <div class="notif-prompt-icon">🔔</div>
+    <h4>Stay notified</h4>
+    <p>Get a notification when someone wants to chat with you.</p>
+    <div class="notif-prompt-actions">
+      <button id="notif-allow-btn" class="btn btn-primary btn-sm">Enable</button>
+      <button id="notif-deny-btn"  class="btn btn-ghost btn-sm">Not now</button>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/index.html" class="navbar-logo">
+        <div class="logo-icon">💬</div>
+        <span class="logo-text">ChatSphere</span>
+      </a>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/random-chat.html" class="active">Random Chat</a></li>
+        <li><a href="/voice-chat.html">🎙️ Voice Call</a></li>
+        <li><a href="/video-chat.html">Video Chat</a></li>
+        <li><a href="/chat-rooms.html">Chat Rooms</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/safety.html">Safety</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <span class="status-dot"><span class="live-user-count">4,823</span> online</span>
+      </div>
+      <button class="navbar-toggle" id="nav-toggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================================================
+       CHAT LAYOUT — Two column: sidebar + chat window
+       ================================================ -->
+  <div class="chat-layout">
+
+    <!-- ---- LEFT SIDEBAR ---- -->
+    <aside class="chat-sidebar">
+
+      <!-- Status card -->
+      <div class="chat-status-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.85rem; font-weight:600;">Status</span>
+          <span id="chat-status" style="font-size:0.82rem; color:var(--text-muted);">Not connected</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.82rem; color:var(--text-muted);">Duration</span>
+          <span id="chat-timer" style="font-size:0.82rem; font-family:var(--font-mono);">0:00</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.82rem; color:var(--text-muted);">Messages</span>
+          <span id="msg-count" style="font-size:0.82rem;">0</span>
+        </div>
+      </div>
+
+      <!-- Find / Skip button (main CTA) -->
+      <button id="find-stranger-btn" class="btn btn-primary btn-full">
+        🔍 Find Stranger
+      </button>
+
+      <!-- Interest Tags — Match with people who share interests -->
+      <div>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:var(--space-sm);">
+          Add interests (optional) to match better:
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span class="interest-tag" data-tag="gaming">🎮 Gaming</span>
+          <span class="interest-tag" data-tag="anime">🎌 Anime</span>
+          <span class="interest-tag" data-tag="music">🎵 Music</span>
+          <span class="interest-tag" data-tag="sports">⚽ Sports</span>
+          <span class="interest-tag" data-tag="movies">🎬 Movies</span>
+          <span class="interest-tag" data-tag="art">🎨 Art</span>
+          <span class="interest-tag" data-tag="travel">✈️ Travel</span>
+          <span class="interest-tag" data-tag="food">🍕 Food</span>
+        </div>
+      </div>
+
+      <!-- People online -->
+      <div class="chat-status-card">
+        <div class="status-dot">
+          <strong class="live-user-count">4,823</strong>&nbsp;people online
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Active right now on ChatSphere</p>
+      </div>
+
+      <!-- Bottom: Links -->
+      <div class="chat-sidebar-footer">
+        <a href="/safety.html" style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">🛡️ Safety Center</a>
+        <a href="/safety.html#report" style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">⚠️ Report Abuse</a>
+        <a href="/privacy-policy.html" style="font-size:0.82rem; color:var(--text-muted); display:block; margin-bottom:6px;">🔒 Privacy Policy</a>
+        <a href="/terms-conditions.html" style="font-size:0.82rem; color:var(--text-muted); display:block;">📋 Terms of Service</a>
+      </div>
+
+    </aside>
+
+    <!-- ---- MAIN CHAT WINDOW ---- -->
+    <div class="chat-main">
+
+      <!-- Top bar: stranger info + actions -->
+      <div class="chat-topbar">
+        <div class="stranger-info">
+          <div class="stranger-avatar">👤</div>
+          <div>
+            <div class="stranger-name">Stranger</div>
+            <div class="stranger-status" id="topbar-status">Find someone to start chatting</div>
+          </div>
+        </div>
+        <div class="chat-topbar-actions">
+          <!-- Voice Call button -->
+          <a href="/voice-chat.html" class="btn btn-secondary btn-sm" style="border-color:var(--cyan); color:var(--cyan);" title="Start Voice Call with Stranger">🎙️ Voice Call</a>
+          <!-- Report button -->
+          <button id="report-btn" class="btn btn-ghost btn-sm btn-icon" title="Report this user">⚠️</button>
+          <!-- Block button -->
+          <button class="btn btn-ghost btn-sm btn-icon" title="Block this user" onclick="ChatSphere.showToast('User blocked', 'success')">🚫</button>
+          <!-- Share button -->
+          <a href="/chat-rooms.html" class="btn btn-secondary btn-sm">🏠 Chat Rooms</a>
+        </div>
+      </div>
+
+      <!-- Messages area -->
+      <div class="chat-messages" id="messages-container">
+        <!-- Welcome system message -->
+        <div class="msg-system">
+          👋 Welcome to ChatSphere! Click <strong>Find Stranger</strong> to start chatting.
+        </div>
+        <div class="msg-system">
+          🛡️ Remember: Never share personal information. <a href="/safety.html" style="color:var(--purple-light);">Stay safe →</a>
+        </div>
+      </div>
+
+      <!-- Chat input bar -->
+      <div class="chat-input-bar">
+        <!-- Voice note button -->
+        <button id="voice-note-btn" class="btn btn-ghost btn-icon" title="Record Voice Note" onclick="recordVoiceNote()">
+          🎙️
+        </button>
+        <textarea
+          id="message-input"
+          class="chat-input"
+          placeholder="Type a message... (Enter to send)"
+          rows="1"
+          maxlength="500"
+        ></textarea>
+        <button id="send-btn" class="btn btn-primary btn-icon" title="Send message">
+          ➤
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JS Files -->
+  <script src="/js/main.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/notifications.js"></script>
+
+  <!-- Auto-resize textarea as user types -->
+  <script>
+    const textarea = document.getElementById('message-input');
+    if (textarea) {
+      textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      });
+    }
+
+    // Restore nickname from homepage
+    const savedNickname = sessionStorage.getItem('cs_nickname');
+    if (savedNickname) {
+      const nameEl = document.querySelector('.stranger-name');
+      // Could show user their own nickname in sidebar
+    }
+    // Voice Note recorder simulation
+    let isRecordingVoice = false;
+    function recordVoiceNote() {
+      const btn = document.getElementById('voice-note-btn');
+      if (!isRecordingVoice) {
+        isRecordingVoice = true;
+        btn.style.color = 'var(--red)';
+        btn.textContent = '⏹️';
+        ChatSphere.showToast('🎙️ Recording voice note... click ⏹️ to send', 'info');
+      } else {
+        isRecordingVoice = false;
+        btn.style.color = '';
+        btn.textContent = '🎙️';
+        // Add voice message to chat
+        const container = document.getElementById('messages-container');
+        if (container) {
+          const row = document.createElement('div');
+          row.className = 'msg-row me';
+          row.innerHTML = `
+            <div class="msg-bubble" style="display:flex; align-items:center; gap:8px;">
+              <span>▶️</span>
+              <div style="height:4px; width:90px; background:rgba(255,255,255,0.4); border-radius:2px;"></div>
+              <span style="font-size:0.75rem;">0:04</span>
+            </div>
+          `;
+          container.appendChild(row);
+          container.scrollTop = container.scrollHeight;
+          ChatSphere.showToast('Voice note sent!', 'success');
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>

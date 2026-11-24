@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ================================================
+       SEO META TAGS — Important for Google indexing
+       Change "ChatSphere" to your site name
+       ================================================ -->
+  <title>ChatSphere - Talk to Strangers Online | Free Random Chat</title>
+  <meta name="description" content="ChatSphere - Talk to strangers online for free! Random chat, video chat, and group chat rooms. Meet new people from 180+ countries. Anonymous, safe, and fun." />
+  <meta name="keywords"    content="talk to strangers, random chat, online chat, video chat, chat rooms, anonymous chat, meet strangers, free chat" />
+  <meta name="robots"      content="index, follow" />
+  <link rel="canonical"    href="https://chatsphere.com/" />
+
+  <!-- Open Graph (Facebook, WhatsApp preview) -->
+  <meta property="og:title"       content="ChatSphere - Talk to Strangers Online" />
+  <meta property="og:description" content="Meet strangers from around the world. Random chat, video chat, group rooms & built-in games. 100% free." />
+  <meta property="og:image"       content="https://chatsphere.com/assets/images/og-image.jpg" />
+  <meta property="og:url"         content="https://chatsphere.com/" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="ChatSphere" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="ChatSphere - Talk to Strangers Online" />
+  <meta name="twitter:description" content="Free random chat with strangers. Video chat, group rooms, games. Anonymous & safe." />
+  <meta name="twitter:image"       content="https://chatsphere.com/assets/images/og-image.jpg" />
+
+  <!-- Favicon (replace with your actual favicon) -->
+  <link rel="icon"             type="image/png" href="/assets/images/favicon.png" />
+  <link rel="apple-touch-icon" href="/assets/images/icon-192.png" />
+
+  <!-- Manifest (PWA) -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Fonts: Inter (clean, modern) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Main stylesheet + animations -->
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/animations.css" />
+
+  <!-- Google AdSense — Replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+  <!-- Structured Data (JSON-LD) for Google rich results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ChatSphere",
+    "url": "https://chatsphere.com",
+    "description": "Free random chat with strangers online. Video chat, group rooms, and games.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://chatsphere.com/chat-rooms.html?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+
+<body>
+
+  <!-- ================================================
+       AGE GATE MODAL — 18+ Verification
+       Shown on first visit. Stored in localStorage.
+       JS: main.js → initAgeGate()
+       ================================================ -->
+  <div id="age-gate-overlay" class="age-gate-overlay" style="display:none;">
+    <div class="age-gate-box">
+      <div class="age-gate-icon">🔞</div>
+      <h2>Adults Only (18+)</h2>
+      <p>
+        ChatSphere is for adults only. By entering, you confirm you are
+        <strong>18 or older</strong> and agree to our
+        <a href="/terms-conditions.html">Terms of Service</a>,
+        <a href="/privacy-policy.html">Privacy Policy</a>, and
+        <a href="/safety.html">Community Rules</a>.
+      </p>
+      <div class="age-gate-buttons">
+        <button id="age-gate-enter" class="btn btn-primary btn-lg">
+          ✅ I'm 18 or older — Enter
+        </button>
+        <button id="age-gate-exit" class="btn btn-ghost">
+          I'm under 18
+        </button>
+      </div>
+      <p style="margin-top:16px; font-size:0.78rem; color:var(--text-muted);">
+        Learn how to <a href="/safety.html">report & block</a> other users.
+      </p>
+    </div>
+  </div>
+
+  <!-- ================================================
+       SAFE SITE BANNER
+       "This site is safe" notification at top
+       JS: main.js → initSafeBanner()
+       ================================================ -->
+  <div id="safe-banner" class="safe-banner">
+    <span class="safe-icon">🔒</span>
+    <strong>ChatSphere is Safe</strong>
+    <span>— SSL Encrypted · No personal data stored · Report any user instantly</span>
+    <button class="close-banner" aria-label="Close banner">✕</button>
+  </div>
+
+  <!-- ================================================
+       PUSH NOTIFICATION PROMPT
+       Slides in from bottom-right after 8 seconds
+       JS: notifications.js → showNotifPrompt()
+       ================================================ -->
+  <div id="notif-prompt" class="notif-prompt">
+    <div class="notif-prompt-icon">🔔</div>
+    <h4>Stay notified</h4>
+    <p>Get a notification when someone wants to chat with you.</p>
+    <div class="notif-prompt-actions">
+      <button id="notif-allow-btn" class="btn btn-primary btn-sm">Enable</button>
+      <button id="notif-deny-btn"  class="btn btn-ghost btn-sm">Not now</button>
+    </div>
+  </div>
+
+  <!-- ================================================
+       NAVBAR — Top navigation bar
+       JS: main.js → initNavbar()
+       ================================================ -->
+  <nav class="navbar">
+    <div class="container">
+
+      <!-- Logo -->
+      <a href="/index.html" class="navbar-logo">
+        <div class="logo-icon">💬</div>
+        <span class="logo-text">ChatSphere</span>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/index.html" class="active">Home</a></li>
+        <li><a href="/random-chat.html">Random Chat</a></li>
+        <li><a href="/voice-chat.html">Voice Call</a></li>
+        <li><a href="/video-chat.html">Video Chat</a></li>
+        <li><a href="/chat-rooms.html">Chat Rooms</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/safety.html">Safety</a></li>
+      </ul>
+
+      <!-- Right side: live count + buttons -->
+      <div class="navbar-actions">
+        <!-- Mini live counter in navbar -->
+        <span class="status-dot" title="People online right now">
+          <span class="live-user-count">4,823</span> online
+        </span>
+        <a href="/random-chat.html" class="btn btn-primary btn-sm">Start Chat</a>
+      </div>
+
+      <!-- Mobile hamburger button -->
+      <button class="navbar-toggle" id="nav-toggle" aria-label="Open menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper (pushed down from fixed navbar) -->
+  <main style="padding-top:68px;">
+
+    <!-- ================================================
+         HERO SECTION
+         The main landing area of the homepage
+         ================================================ -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+
+          <!-- Left: Text content and start chat form -->
+          <div class="hero-content animate-fade-up">
+
+            <!-- Safe badge -->
+            <div class="hero-badge">
+              <span class="dot"></span>
+              🔒 Safe &amp; Anonymous Chat
+            </div>
+
+            <!-- Main heading -->
+            <h1>
+              Talk to <span class="text-gradient">Strangers</span><br/>
+              Make New Friends
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="hero-subtitle">
+              Connect with real people from 180+ countries instantly.
+              Random chat, video chat, group rooms, and built-in games —
+              100% free, no sign-up required.
+            </p>
+
+            <!-- Quick start form -->
+            <div class="hero-form">
+              <label class="form-label" for="hero-nickname">
+                Your nickname (optional)
+              </label>
+              <input
+                type="text"
+                id="hero-nickname"
+                class="nickname-input"
+                placeholder="Enter a nickname or stay anonymous..."
+                maxlength="20"
+              />
+              <div class="hero-buttons">
+                <!-- Text chat button -->
+                <a href="/random-chat.html" class="btn btn-primary btn-lg">
+                  💬 Start Random Chat
+                </a>
+                <!-- Voice call button -->
+                <a href="/voice-chat.html" class="btn btn-secondary btn-lg" style="border-color:var(--cyan); color:var(--cyan);">
+                  🎙️ Start Voice Call
+                </a>
+                <!-- Video chat button -->
+                <a href="/video-chat.html" class="btn btn-danger btn-lg">
+                  📹 Start Video Chat
+                </a>
+                <!-- Chat rooms button -->
+                <a href="/chat-rooms.html" class="btn btn-secondary">
+                  🏠 Browse Chat Rooms
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: Visual card with live stats -->
+          <div class="hero-visual">
+            <div class="hero-card">
+              <div class="hero-card-header">
+                <div class="hero-avatar">🌍</div>
+                <div>
+                  <div class="hero-online-count" id="hero-user-count">4,823</div>
+                  <div class="hero-online-label">people online right now</div>
+                </div>
+              </div>
+
+              <!-- Fake chat preview showing the experience -->
+              <div class="hero-chat-preview">
+                <div class="preview-bubble them">Hey! Where are you from? 👋</div>
+                <div class="preview-bubble me">India! You?</div>
+                <div class="preview-bubble them">US! Cool, want to play chess? ♟️</div>
+                <div class="preview-bubble me">Sure! Let's go 😄</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================
+         LIVE COUNTER BAR
+         Real-time stats below hero
+         JS: users.js updates all .live-user-count elements
+         ================================================ -->
+    <section class="live-counter-bar">
+      <div class="container">
+        <div class="live-counter-inner">
+
+          <div class="counter-item">
+            <div class="counter-number live-user-count">4,823</div>
+            <div class="counter-label">Online Now</div>
+          </div>
+
+          <div class="counter-divider"></div>
+
+          <div class="counter-item">
+            <div class="counter-number live-chat-count">2,100</div>
+            <div class="counter-label">Active Chats</div>
+          </div>
+
+          <div class="counter-divider"></div>
+
+          <div class="counter-item">
+            <div class="counter-number">180+</div>
+            <div class="counter-label">Countries</div>
+          </div>
+
+          <div class="counter-divider"></div>
+
+          <div class="counter-item">
+            <div class="counter-number">Free</div>
+            <div class="counter-label">Always</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================
+         AD SLOT — Below hero (AdSense Leaderboard 728x90)
+         Replace with your AdSense ad unit code
+         ================================================ -->
+    <div class="container">
+      <div class="ad-wrapper">
+        <div class="ad-slot ad-banner">
+          <!-- AdSense: Paste your ad code here
+          <ins class="adsbygoogle"
+               style="display:inline-block;width:728px;height:90px"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="XXXXXXXXXX"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+          -->
+          Advertisement
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================
+         FEATURES SECTION
+         What can users do on ChatSphere
+         ================================================ -->
+    <section class="section" id="features">
+      <div class="container">
+
+        <div class="section-header reveal">
+          <span class="section-tag">Features</span>
+          <h2>Everything you need to <span class="text-gradient">connect</span></h2>
+          <p>ChatSphere has more than just basic chat. Explore all the ways to meet and talk with new people.</p>
+        </div>
+
+        <div class="features-grid">
+
+          <!-- Feature 1: Random Chat -->
+          <div class="feature-card reveal delay-1">
+            <div class="feature-icon purple">💬</div>
+            <h3>Random Text Chat</h3>
+            <p>Instantly connect with a random stranger. No sign-up needed. Just type and start talking right away.</p>
+          </div>
+
+          <!-- Feature 2: Video Chat -->
+          <div class="feature-card reveal delay-2">
+            <div class="feature-icon red">📹</div>
+            <h3>Video Chat</h3>
+            <p>Face-to-face conversations with strangers worldwide using your webcam. Skip anytime, find someone new.</p>
+          </div>
+
+          <!-- Feature 3: Group Rooms -->
+          <div class="feature-card reveal delay-3">
+            <div class="feature-icon cyan">🏠</div>
+            <h3>Group Chat Rooms</h3>
+            <p>Join topic-based rooms: Gaming, Anime, Music, Dating, LGBT, and more. Talk with many people at once.</p>
+          </div>
+
+          <!-- Feature 4: Games -->
+          <div class="feature-card reveal delay-1">
+            <div class="feature-icon yellow">🎮</div>
+            <h3>Play Games Together</h3>
+            <p>Play Chess, Battleship, Tic Tac Toe, Word Dash, and 8 more mini-games directly inside the chat window.</p>
+          </div>
+
+          <!-- Feature 5: Anonymous -->
+          <div class="feature-card reveal delay-2">
+            <div class="feature-icon green">🎭</div>
+            <h3>100% Anonymous</h3>
+            <p>No registration, no email, no phone number. Use a nickname or stay completely anonymous. Your privacy matters.</p>
+          </div>
+
+          <!-- Feature 6: Safe -->
+          <div class="feature-card reveal delay-3">
+            <div class="feature-icon pink">🛡️</div>
+            <h3>Safe & Moderated</h3>
+            <p>Report and block any user instantly. Our moderation team and AI filters keep the community safe.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================
+         CHAT ROOMS SECTION — Preview of available rooms
+         ================================================ -->
+    <section class="section" style="background: var(--bg-secondary);" id="rooms">
+      <div class="container">
+
+        <div class="section-header reveal">
+          <span class="section-tag">Chat Rooms</span>
+          <h2>Find your <span class="text-gradient">community</span></h2>
+          <p>Join rooms based on your interests and meet like-minded people.</p>
+        </div>
+
+        <div class="rooms-grid reveal">
+
+          <a href="/chat-rooms.html?room=general"  class="room-card">
+            <div class="room-emoji">💬</div>
+            <div class="room-name">General Chat</div>
+            <div class="room-users"><span class="dot-online"></span> <span class="live-user-count">4,823</span> online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=gaming"   class="room-card">
+            <div class="room-emoji">🎮</div>
+            <div class="room-name">Gaming Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 1,243 online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=anime"    class="room-card">
+            <div class="room-emoji">🎌</div>
+            <div class="room-name">Anime Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 876 online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=music"    class="room-card">
+            <div class="room-emoji">🎵</div>
+            <div class="room-name">Music Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 654 online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=dating"   class="room-card">
+            <div class="room-emoji">💕</div>
+            <div class="room-name">Dating Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 1,102 online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=lgbtq"    class="room-card">
+            <div class="room-emoji">🏳️‍🌈</div>
+            <div class="room-name">LGBT+ Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 743 online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=teen"     class="room-card">
+            <div class="room-emoji">🧑</div>
+            <div class="room-name">Teen Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 932 online</div>
+          </a>
+
+          <a href="/chat-rooms.html?room=roleplay" class="room-card">
+            <div class="room-emoji">🎭</div>
+            <div class="room-name">Roleplay Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 421 online</div>
+          </a>
+
+        </div>
+
+        <div style="text-align:center; margin-top:var(--space-xl);">
+          <a href="/chat-rooms.html" class="btn btn-secondary btn-lg">View All Rooms →</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================
+         GAMES SECTION
+         ================================================ -->
+    <section class="section" id="games">
+      <div class="container">
+
+        <div class="section-header reveal">
+          <span class="section-tag">Mini Games</span>
+          <h2>Play while you <span class="text-gradient">chat</span></h2>
+          <p>12 built-in games you can play right inside any chat window.</p>
+        </div>
+
+        <div class="games-grid reveal">
+          <div class="game-card"><div class="game-emoji">♟️</div><div class="game-name">Chess</div></div>
+          <div class="game-card"><div class="game-emoji">🚢</div><div class="game-name">Battleship</div></div>
+          <div class="game-card"><div class="game-emoji">⭕</div><div class="game-name">Tic Tac Toe</div></div>
+          <div class="game-card"><div class="game-emoji">🔴</div><div class="game-name">Connect 4</div></div>
+          <div class="game-card"><div class="game-emoji">🎲</div><div class="game-name">Checkers</div></div>
+          <div class="game-card"><div class="game-emoji">📝</div><div class="game-name">Word Dash</div></div>
+          <div class="game-card"><div class="game-emoji">🧠</div><div class="game-name">Trivia</div></div>
+          <div class="game-card"><div class="game-emoji">✊</div><div class="game-name">Rock Paper Scissors</div></div>
+          <div class="game-card"><div class="game-emoji">⌨️</div><div class="game-name">Speed Typing</div></div>
+          <div class="game-card"><div class="game-emoji">🃏</div><div class="game-name">Memory Match</div></div>
+          <div class="game-card"><div class="game-emoji">💣</div><div class="game-name">Minesweeper</div></div>
+          <div class="game-card"><div class="game-emoji">•••</div><div class="game-name">Dots & Boxes</div></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================
+         AD SLOT — Mid-page rectangle (300x250)
+         ================================================ -->
+    <div class="container">
+      <div class="ad-wrapper">
+        <div class="ad-slot ad-rectangle">Advertisement</div>
+      </div>
+    </div>
+
+    <!-- ================================================
+         TRUST & SAFETY SECTION
+         ================================================ -->
+    <section class="section" style="background: var(--bg-secondary);" id="safety-section">
+      <div class="container">
+
+        <div class="section-header reveal">
+          <span class="section-tag">Safety First</span>
+          <h2>Your safety is our <span class="text-gradient">priority</span></h2>
+          <p>We've built multiple layers of protection so you can chat with confidence.</p>
+        </div>
+
+        <div class="trust-grid reveal">
+
+          <div class="trust-item">
+            <div class="trust-icon-wrap">🔒</div>
+            <div>
+              <h4>SSL Encrypted</h4>
+              <p>All connections are secured with HTTPS/WSS encryption. Your chats cannot be intercepted.</p>
+            </div>
+          </div>
+
+          <div class="trust-item">
+            <div class="trust-icon-wrap">🚫</div>
+            <div>
+              <h4>Instant Block & Report</h4>
+              <p>Block or report any user with one click. Reports are reviewed within hours.</p>
+            </div>
+          </div>
+
+          <div class="trust-item">
+            <div class="trust-icon-wrap">🤖</div>
+            <div>
+              <h4>AI Content Moderation</h4>
+              <p>Our AI automatically detects and removes harmful content in real-time.</p>
+            </div>
+          </div>
+
+          <div class="trust-item">
+            <div class="trust-icon-wrap">🎭</div>
+            <div>
+              <h4>No Personal Data</h4>
+              <p>We don't store your chats or require personal information. Stay fully anonymous.</p>
+            </div>
+          </div>
+
+          <div class="trust-item">
+            <div class="trust-icon-wrap">👶</div>
+            <div>
+              <h4>18+ Age Verification</h4>
+              <p>Age gate on every entry ensures only adults can access the platform.</p>
+            </div>
+          </div>
+
+          <div class="trust-item">
+            <div class="trust-icon-wrap">📋</div>
+            <div>
+              <h4>Community Rules</h4>
+              <p>Clear rules enforced consistently. Violations result in immediate bans.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================
+         STATS BAR — Platform numbers
+         ================================================ -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="stats-bar reveal">
+          <div>
+            <div class="stat-number">50M+</div>
+            <div class="stat-label">Total Chats</div>
+          </div>
+          <div>
+            <div class="stat-number">180+</div>
+            <div class="stat-label">Countries</div>
+          </div>
+          <div>
+            <div class="stat-number">2M+</div>
+            <div class="stat-label">Monthly Users</div>
+          </div>
+          <div>
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Free Forever</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================
+         CTA SECTION — Final push to start chatting
+         ================================================ -->
+    <section class="section-sm">
+      <div class="container">
+        <div class="cta-section reveal">
+          <h2>Ready to meet someone new?</h2>
+          <p>Start a conversation right now — no account, no email, no waiting.</p>
+          <div class="cta-buttons">
+            <a href="/random-chat.html" class="btn btn-white btn-lg">💬 Start Chatting Free</a>
+            <a href="/video-chat.html"  class="btn btn-secondary btn-lg" style="border-color:rgba(255,255,255,0.3); color:white;">📹 Video Chat</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================
+         BOTTOM AD SLOT — Leaderboard (728x90)
+         ================================================ -->
+    <div class="container">
+      <div class="ad-wrapper">
+        <div class="ad-slot ad-banner">Advertisement</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================================================
+       FOOTER — Site-wide footer
+       ================================================ -->
+  <footer>
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <!-- Brand column -->
+        <div class="footer-brand">
+          <a href="/index.html" class="navbar-logo" style="margin-bottom:8px;">
+            <div class="logo-icon">💬</div>
+            <span class="logo-text">ChatSphere</span>
+          </a>
+          <p>Anonymous chat with strangers worldwide. Free, safe, and fun. No registration required.</p>
+          <!-- Safe badge -->
+          <div class="safe-badge" style="margin-top:8px;">
+            🔒 SSL Secured · Safe Platform
+          </div>
+          <!-- Social links -->
+          <div class="footer-social">
+            <a href="#" aria-label="Twitter">𝕏</a>
+            <a href="#" aria-label="Instagram">📸</a>
+            <a href="#" aria-label="Discord">🎮</a>
+          </div>
+        </div>
+
+        <!-- Chat links -->
+        <div class="footer-col">
+          <h4>Chat</h4>
+          <ul>
+            <li><a href="/random-chat.html">Random Chat</a></li>
+            <li><a href="/video-chat.html">Video Chat</a></li>
+            <li><a href="/chat-rooms.html">Chat Rooms</a></li>
+            <li><a href="/chat-rooms.html?room=dating">Dating Chat</a></li>
+            <li><a href="/chat-rooms.html?room=gaming">Gaming Chat</a></li>
+          </ul>
+        </div>
+
+        <!-- Company links -->
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="/about.html">About Us</a></li>
+            <li><a href="/safety.html">Safety Center</a></li>
+            <li><a href="/safety.html#report">Report Abuse</a></li>
+            <li><a href="/about.html#contact">Contact Us</a></li>
+            <li><a href="/about.html#blog">Blog</a></li>
+          </ul>
+        </div>
+
+        <!-- Legal links (required for AdSense) -->
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="/terms-conditions.html">Terms of Service</a></li>
+            <li><a href="/safety.html#community-rules">Community Rules</a></li>
+            <li><a href="/privacy-policy.html#cookies">Cookie Policy</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Footer bottom bar -->
+      <div class="footer-bottom">
+        <p>© 2024 ChatSphere. All rights reserved. | 18+ Adults Only</p>
+        <div class="footer-bottom-links">
+          <a href="/privacy-policy.html">Privacy</a>
+          <a href="/terms-conditions.html">Terms</a>
+          <a href="/safety.html">Safety</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ================================================
+       JAVASCRIPT — Load at bottom for performance
+       1. main.js   → age gate, navbar, safe banner
+       2. users.js  → live user counter
+       3. notifications.js → push notifications
+       ================================================ -->
+  <script src="/js/main.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/notifications.js"></script>
+
+  <!-- Save nickname from hero form to sessionStorage before navigating -->
+  <script>
+    // Store nickname when user starts chat
+    const heroNickname = document.getElementById('hero-nickname');
+    document.querySelectorAll('a[href*="chat"]').forEach(link => {
+      link.addEventListener('click', () => {
+        if (heroNickname && heroNickname.value.trim()) {
+          sessionStorage.setItem('cs_nickname', heroNickname.value.trim());
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

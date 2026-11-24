@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Chat with Strangers Free | ChatSphere</title>
+  <meta name="description" content="Free video chat with random strangers online. No download needed. Face-to-face conversations on webcam. Skip anytime, find new people instantly." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://chatsphere.com/video-chat.html" />
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/animations.css" />
+</head>
+
+<body>
+
+  <!-- Age Gate Modal -->
+  <div id="age-gate-overlay" class="age-gate-overlay" style="display:none;">
+    <div class="age-gate-box">
+      <div class="age-gate-icon">🔞</div>
+      <h2>Adults Only (18+)</h2>
+      <p>ChatSphere is for adults only. By entering, you confirm you are <strong>18 or older</strong> and agree to our <a href="/terms-conditions.html">Terms</a> and <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+      <div class="age-gate-buttons">
+        <button id="age-gate-enter" class="btn btn-primary btn-lg">✅ I'm 18 or older — Enter</button>
+        <button id="age-gate-exit"  class="btn btn-ghost">I'm under 18</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/index.html" class="navbar-logo">
+        <div class="logo-icon">💬</div>
+        <span class="logo-text">ChatSphere</span>
+      </a>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/random-chat.html">Random Chat</a></li>
+        <li><a href="/video-chat.html" class="active">Video Chat</a></li>
+        <li><a href="/chat-rooms.html">Chat Rooms</a></li>
+        <li><a href="/safety.html">Safety</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <span class="status-dot"><span class="live-user-count">4,823</span> online</span>
+      </div>
+      <button class="navbar-toggle" id="nav-toggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================================================
+       VIDEO CHAT LAYOUT
+       Two windows: yours (bottom-right) + stranger's (main)
+       ================================================ -->
+  <div class="video-layout">
+
+    <!-- Video windows -->
+    <div class="video-windows">
+
+      <!-- Stranger's video (left/top) -->
+      <div class="video-window" id="stranger-video-window">
+        <video id="stranger-video" autoplay playsinline></video>
+        <!-- Shown when stranger has no camera or disconnected -->
+        <div class="video-placeholder" id="stranger-placeholder">
+          <div class="avatar-big">👤</div>
+          <p>Waiting for a stranger...</p>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Click "Next" to find someone</p>
+        </div>
+        <div class="video-label">Stranger</div>
+      </div>
+
+      <!-- Your video (right/bottom) -->
+      <div class="video-window" id="my-video-window">
+        <video id="my-video" autoplay playsinline muted></video>
+        <!-- Shown when camera is off or permission denied -->
+        <div class="video-placeholder" id="my-placeholder">
+          <div class="avatar-big">📷</div>
+          <p>Camera off</p>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Enable camera to show yourself</p>
+        </div>
+        <div class="video-label">You</div>
+      </div>
+
+    </div>
+
+    <!-- ---- VIDEO CONTROLS BAR ---- -->
+    <div class="video-controls">
+
+      <!-- Left: Text chat toggle -->
+      <div style="display:flex; align-items:center; gap:var(--space-sm);">
+        <button class="video-btn active" id="chat-toggle-btn" title="Open text chat" onclick="toggleTextChat()">💬</button>
+        <span style="font-size:0.8rem; color:var(--text-muted);">Chat</span>
+      </div>
+
+      <!-- Center: Main controls -->
+      <div style="display:flex; align-items:center; gap:var(--space-lg);">
+
+        <!-- Mute microphone -->
+        <button class="video-btn active" id="mute-btn" title="Mute microphone" onclick="toggleMute()">🎤</button>
+
+        <!-- Camera on/off -->
+        <button class="video-btn active" id="cam-btn" title="Turn camera off" onclick="toggleCamera()">📹</button>
+
+        <!-- NEXT / Start button — most important -->
+        <button class="video-btn next" id="next-btn" title="Find next stranger" onclick="findNextStranger()" style="width:70px; height:70px; font-size:1rem; border-radius:50%; font-weight:700;">
+          NEXT ⏭️
+        </button>
+
+        <!-- End call -->
+        <button class="video-btn end" id="end-btn" title="End chat" onclick="endChat()">📵</button>
+
+        <!-- Report -->
+        <button class="video-btn active" title="Report this user" onclick="reportUser()">⚠️</button>
+
+      </div>
+
+      <!-- Right: Status -->
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <span id="video-status" style="font-size:0.85rem; color:var(--text-muted);">Click NEXT to start</span>
+        <span class="status-dot" style="font-size:0.8rem;"><span class="live-user-count">4,823</span> online</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================================================
+       SIDE TEXT CHAT PANEL (slides in when toggled)
+       ================================================ -->
+  <div id="text-chat-panel" style="
+    position: fixed;
+    right: -320px;
+    top: 0;
+    bottom: 0;
+    width: 300px;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 300;
+    transition: right 0.3s ease;
+  ">
+    <div style="padding:var(--space-md); border-bottom:1px solid var(--border); font-weight:600;">
+      💬 Text Chat
+    </div>
+    <div id="video-messages" class="chat-messages" style="flex:1; overflow-y:auto; padding:var(--space-md);"></div>
+    <div class="chat-input-bar" style="border-top:1px solid var(--border);">
+      <input
+        type="text"
+        id="video-chat-input"
+        class="chat-input"
+        placeholder="Type a message..."
+        maxlength="300"
+        onkeydown="if(event.key==='Enter') sendVideoMessage()"
+      />
+      <button class="btn btn-primary btn-icon" onclick="sendVideoMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- JS Files -->
+  <script src="/js/main.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/notifications.js"></script>
+
+  <!-- ================================================
+       VIDEO CHAT LOGIC
+       WebRTC camera + Socket.io signaling
+       ================================================ -->
+  <script>
+    /* =============================================
+       VIDEO CHAT JAVASCRIPT
+       Uses WebRTC for peer-to-peer video
+       Socket.io handles signaling (offer/answer/ICE)
+       ============================================= */
+
+    let localStream  = null;   // User's camera stream
+    let peerConn     = null;   // WebRTC peer connection
+    let isMuted      = false;
+    let isCamOff     = false;
+    let textPanelOpen = false;
+    let isConnected  = false;
+
+    // ICE servers (STUN for NAT traversal — free Google STUN servers)
+    const ICE_SERVERS = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ]
+    };
+
+    // Start camera when page loads
+    window.addEventListener('load', startCamera);
+
+    async function startCamera() {
+      try {
+        // Request camera + mic access from browser
+        localStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 1280, height: 720, facingMode: 'user' },
+          audio: true,
+        });
+
+        // Show my video
+        const myVideo = document.getElementById('my-video');
+        myVideo.srcObject = localStream;
+        document.getElementById('my-placeholder').style.display = 'none';
+
+      } catch (err) {
+        // Camera permission denied — show placeholder
+        document.getElementById('video-status').textContent = '⚠️ Camera access denied';
+        console.warn('Camera error:', err);
+      }
+    }
+
+    // Toggle microphone mute
+    function toggleMute() {
+      if (!localStream) return;
+      isMuted = !isMuted;
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMuted;
+      });
+      const btn = document.getElementById('mute-btn');
+      btn.textContent = isMuted ? '🔇' : '🎤';
+      btn.classList.toggle('muted', isMuted);
+    }
+
+    // Toggle camera on/off
+    function toggleCamera() {
+      if (!localStream) return;
+      isCamOff = !isCamOff;
+      localStream.getVideoTracks().forEach(track => {
+        track.enabled = !isCamOff;
+      });
+      const btn = document.getElementById('cam-btn');
+      btn.textContent = isCamOff ? '🚫' : '📹';
+      btn.classList.toggle('muted', isCamOff);
+      document.getElementById('my-placeholder').style.display = isCamOff ? 'flex' : 'none';
+    }
+
+    // Find next stranger (skip current)
+    function findNextStranger() {
+      setVideoStatus('🔍 Looking for a stranger...');
+      document.getElementById('stranger-placeholder').style.display = 'flex';
+      document.getElementById('stranger-video').srcObject = null;
+      isConnected = false;
+
+      // TODO: Implement Socket.io signaling to find next peer
+      // socket.emit('find-video-stranger');
+
+      // Demo: simulate finding someone after 2 seconds
+      setTimeout(() => {
+        setVideoStatus('🎉 Connected! Say hello!');
+        ChatSphere.showToast('Connected with a stranger!', 'success');
+        isConnected = true;
+      }, 2000);
+    }
+
+    // End chat
+    function endChat() {
+      if (peerConn) {
+        peerConn.close();
+        peerConn = null;
+      }
+      document.getElementById('stranger-video').srcObject = null;
+      document.getElementById('stranger-placeholder').style.display = 'flex';
+      setVideoStatus('Chat ended. Click NEXT to find someone.');
+      isConnected = false;
+    }
+
+    // Report user
+    function reportUser() {
+      ChatSphere.showToast('User reported to moderators. Thank you!', 'success');
+    }
+
+    // Toggle text chat panel
+    function toggleTextChat() {
+      textPanelOpen = !textPanelOpen;
+      document.getElementById('text-chat-panel').style.right = textPanelOpen ? '0' : '-320px';
+    }
+
+    // Send text message in video chat
+    function sendVideoMessage() {
+      const input = document.getElementById('video-chat-input');
+      const text  = input.value.trim();
+      if (!text) return;
+
+      const container = document.getElementById('video-messages');
+      const row = document.createElement('div');
+      row.className = 'msg-row me';
+      row.innerHTML = `<div class="msg-bubble">${escapeHtml(text)}</div>`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+      input.value = '';
+
+      // TODO: Send via data channel or Socket.io
+    }
+
+    function setVideoStatus(text) {
+      document.getElementById('video-status').textContent = text;
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(text));
+      return d.innerHTML;
+    }
+  </script>
+
+</body>
+</html>

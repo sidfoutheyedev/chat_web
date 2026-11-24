@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free Chat Rooms - Join Online Conversations | ChatSphere</title>
+  <meta name="description" content="Join free online chat rooms on ChatSphere. Gaming, Anime, Music, Dating, LGBT, Teen chat rooms and more. No sign-up needed." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://chatsphere.com/chat-rooms.html" />
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/animations.css" />
+</head>
+
+<body>
+
+  <!-- Age Gate Modal -->
+  <div id="age-gate-overlay" class="age-gate-overlay" style="display:none;">
+    <div class="age-gate-box">
+      <div class="age-gate-icon">🔞</div>
+      <h2>Adults Only (18+)</h2>
+      <p>ChatSphere is for adults only. By entering, you confirm you are <strong>18 or older</strong>.</p>
+      <div class="age-gate-buttons">
+        <button id="age-gate-enter" class="btn btn-primary btn-lg">✅ I'm 18 or older — Enter</button>
+        <button id="age-gate-exit"  class="btn btn-ghost">I'm under 18</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Safe Banner -->
+  <div id="safe-banner" class="safe-banner">
+    <span class="safe-icon">🔒</span>
+    <strong>ChatSphere is Safe</strong>
+    <span>— SSL Encrypted · Report any user instantly</span>
+    <button class="close-banner">✕</button>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/index.html" class="navbar-logo">
+        <div class="logo-icon">💬</div>
+        <span class="logo-text">ChatSphere</span>
+      </a>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/random-chat.html">Random Chat</a></li>
+        <li><a href="/video-chat.html">Video Chat</a></li>
+        <li><a href="/chat-rooms.html" class="active">Chat Rooms</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/safety.html">Safety</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <span class="status-dot"><span class="live-user-count">4,823</span> online</span>
+        <a href="/random-chat.html" class="btn btn-primary btn-sm">Start Chat</a>
+      </div>
+      <button class="navbar-toggle" id="nav-toggle" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div style="padding-top:68px;">
+
+    <!-- ================================================
+         ROOMS PAGE HEADER
+         ================================================ -->
+    <div class="rooms-page-header">
+      <div class="container">
+        <div class="section-header" style="margin-bottom:var(--space-xl);">
+          <span class="section-tag">Chat Rooms</span>
+          <h1>Find your <span class="text-gradient">community</span></h1>
+          <p>Join any room instantly. No sign-up needed. <span class="live-user-count">4,823</span> people online now.</p>
+        </div>
+
+        <!-- Search bar -->
+        <div class="input-with-icon" style="max-width:500px; margin:0 auto var(--space-xl);">
+          <span class="input-icon">🔍</span>
+          <input
+            type="text"
+            id="room-search"
+            class="form-input"
+            placeholder="Search rooms..."
+            oninput="filterRooms(this.value)"
+          />
+        </div>
+
+        <!-- Category filter tabs -->
+        <div class="rooms-filter">
+          <button class="filter-tab active" onclick="setFilter('all', this)">All Rooms</button>
+          <button class="filter-tab" onclick="setFilter('popular', this)">🔥 Popular</button>
+          <button class="filter-tab" onclick="setFilter('social', this)">💬 Social</button>
+          <button class="filter-tab" onclick="setFilter('interest', this)">🎮 Interests</button>
+          <button class="filter-tab" onclick="setFilter('identity', this)">🏳️‍🌈 Identity</button>
+          <button class="filter-tab" onclick="setFilter('dating', this)">💕 Dating</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================
+         ROOMS GRID — All available chat rooms
+         Each room card has: emoji, name, users, category
+         ================================================ -->
+    <section class="section-sm">
+      <div class="container">
+
+        <!-- Ad slot above rooms -->
+        <div class="ad-wrapper">
+          <div class="ad-slot ad-banner">Advertisement</div>
+        </div>
+
+        <div class="rooms-grid" id="rooms-grid">
+
+          <!-- POPULAR ROOMS -->
+          <a href="#" class="room-card" data-category="popular social" onclick="joinRoom('General Chat'); return false;">
+            <div class="room-emoji">💬</div>
+            <div class="room-name">General Chat</div>
+            <div class="room-users"><span class="dot-online"></span> <span class="live-user-count">4,823</span> online</div>
+            <div class="badge badge-purple" style="margin-top:4px;">Most Popular</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="popular social dating" onclick="joinRoom('Dating Chat'); return false;">
+            <div class="room-emoji">💕</div>
+            <div class="room-name">Dating Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 1,102 online</div>
+            <div class="badge badge-cyan" style="margin-top:4px;">Active</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="popular interest" onclick="joinRoom('Gaming Chat'); return false;">
+            <div class="room-emoji">🎮</div>
+            <div class="room-name">Gaming Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 1,243 online</div>
+            <div class="badge badge-green" style="margin-top:4px;">Trending</div>
+          </a>
+
+          <!-- SOCIAL ROOMS -->
+          <a href="#" class="room-card" data-category="social" onclick="joinRoom('Teen Chat'); return false;">
+            <div class="room-emoji">🧑</div>
+            <div class="room-name">Teen Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 932 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="social" onclick="joinRoom('Singles Chat'); return false;">
+            <div class="room-emoji">💘</div>
+            <div class="room-name">Singles Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 756 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="social" onclick="joinRoom('Adults Chat'); return false;">
+            <div class="room-emoji">🔞</div>
+            <div class="room-name">Adults Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 893 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="social" onclick="joinRoom('Christian Chat'); return false;">
+            <div class="room-emoji">✝️</div>
+            <div class="room-name">Christian Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 312 online</div>
+          </a>
+
+          <!-- INTEREST ROOMS -->
+          <a href="#" class="room-card" data-category="interest" onclick="joinRoom('Anime Chat'); return false;">
+            <div class="room-emoji">🎌</div>
+            <div class="room-name">Anime Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 876 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="interest" onclick="joinRoom('Music Chat'); return false;">
+            <div class="room-emoji">🎵</div>
+            <div class="room-name">Music Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 654 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="interest" onclick="joinRoom('Roleplay Chat'); return false;">
+            <div class="room-emoji">🎭</div>
+            <div class="room-name">Roleplay Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 421 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="interest" onclick="joinRoom('Pokemon Chat'); return false;">
+            <div class="room-emoji">⚡</div>
+            <div class="room-name">Pokemon Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 334 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="interest" onclick="joinRoom('Furry Chat'); return false;">
+            <div class="room-emoji">🐾</div>
+            <div class="room-name">Furry Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 287 online</div>
+          </a>
+
+          <!-- IDENTITY ROOMS -->
+          <a href="#" class="room-card" data-category="identity" onclick="joinRoom('LGBT+ Chat'); return false;">
+            <div class="room-emoji">🏳️‍🌈</div>
+            <div class="room-name">LGBT+ Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 743 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="identity" onclick="joinRoom('Gay Chat'); return false;">
+            <div class="room-emoji">🏳️‍🌈</div>
+            <div class="room-name">Gay Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 543 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="identity" onclick="joinRoom('Lesbian Chat'); return false;">
+            <div class="room-emoji">🌈</div>
+            <div class="room-name">Lesbian Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 412 online</div>
+          </a>
+
+          <a href="#" class="room-card" data-category="identity" onclick="joinRoom('Trans Chat'); return false;">
+            <div class="room-emoji">⚧️</div>
+            <div class="room-name">Trans Chat</div>
+            <div class="room-users"><span class="dot-online"></span> 298 online</div>
+          </a>
+
+        </div>
+
+        <!-- No results message (shown by filter JS) -->
+        <div id="no-results" style="display:none; text-align:center; padding:var(--space-2xl); color:var(--text-muted);">
+          <div style="font-size:3rem; margin-bottom:var(--space-md);">🔍</div>
+          <h3>No rooms found</h3>
+          <p>Try a different search term or browse all rooms.</p>
+        </div>
+
+        <!-- Ad slot below rooms -->
+        <div class="ad-wrapper" style="margin-top:var(--space-xl);">
+          <div class="ad-slot ad-banner">Advertisement</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-bottom" style="padding-top:var(--space-lg);">
+          <p>© 2024 ChatSphere. All rights reserved. | 18+ Adults Only</p>
+          <div class="footer-bottom-links">
+            <a href="/privacy-policy.html">Privacy</a>
+            <a href="/terms-conditions.html">Terms</a>
+            <a href="/safety.html">Safety</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- end padding-top wrapper -->
+
+  <!-- Room Join Modal -->
+  <div id="join-modal" style="
+    display:none; position:fixed; inset:0;
+    background:var(--bg-modal); z-index:999;
+    align-items:center; justify-content:center;
+  ">
+    <div class="card" style="max-width:420px; width:90%; text-align:center;">
+      <div style="font-size:2.5rem; margin-bottom:var(--space-md);" id="modal-emoji">💬</div>
+      <h3 id="modal-room-name">General Chat</h3>
+      <p style="margin:var(--space-md) 0;">Enter your nickname (optional) and join the room:</p>
+      <input type="text" class="form-input" id="modal-nickname" placeholder="Your nickname (or stay anonymous)" style="margin-bottom:var(--space-md);" />
+      <div style="display:flex; gap:var(--space-sm);">
+        <button class="btn btn-primary btn-full" onclick="confirmJoinRoom()">Join Room 🚀</button>
+        <button class="btn btn-ghost" onclick="closeJoinModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/notifications.js"></script>
+
+  <script>
+    /* =============================================
+       CHAT ROOMS PAGE JAVASCRIPT
+       - Filter rooms by category or search
+       - Join room modal
+       ============================================= */
+
+    let selectedRoom = '';
+
+    // Show join modal when room is clicked
+    function joinRoom(roomName) {
+      selectedRoom = roomName;
+      document.getElementById('modal-room-name').textContent = roomName;
+      const modal = document.getElementById('join-modal');
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('modal-nickname').focus(), 100);
+    }
+
+    function closeJoinModal() {
+      document.getElementById('join-modal').style.display = 'none';
+    }
+
+    // Confirm join — go to chat page with room param
+    function confirmJoinRoom() {
+      const nickname = document.getElementById('modal-nickname').value.trim();
+      if (nickname) sessionStorage.setItem('cs_nickname', nickname);
+      sessionStorage.setItem('cs_room', selectedRoom);
+      // Redirect to random chat with room selected
+      window.location.href = `/random-chat.html?room=${encodeURIComponent(selectedRoom)}`;
+    }
+
+    // Filter rooms by category tab
+    function setFilter(category, btn) {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Show/hide room cards
+      const cards = document.querySelectorAll('.room-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cats = card.dataset.category || '';
+        const matches = category === 'all' || cats.includes(category);
+        card.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+      });
+
+      document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // Filter rooms by search text
+    function filterRooms(query) {
+      const q = query.toLowerCase().trim();
+      const cards = document.querySelectorAll('.room-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const name = card.querySelector('.room-name').textContent.toLowerCase();
+        const matches = !q || name.includes(q);
+        card.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+      });
+
+      document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // Close modal on background click
+    document.getElementById('join-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeJoinModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeJoinModal();
+    });
+  </script>
+
+</body>
+</html>

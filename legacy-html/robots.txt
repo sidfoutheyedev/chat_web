@@ -1,0 +1,25 @@
+# robots.txt — ChatSphere
+# Tells search engine crawlers what to index and what to skip
+# URL: https://chatsphere.com/robots.txt
+
+# Allow all crawlers
+User-agent: *
+
+# Allow everything important
+Allow: /index.html
+Allow: /random-chat.html
+Allow: /video-chat.html
+Allow: /chat-rooms.html
+Allow: /about.html
+Allow: /safety.html
+Allow: /privacy-policy.html
+Allow: /terms-conditions.html
+Allow: /css/
+Allow: /js/
+
+# Block backend and assets from indexing
+Disallow: /backend/
+Disallow: /assets/
+
+# Sitemap location — Google uses this to find all pages
+Sitemap: https://chatsphere.com/sitemap.xml

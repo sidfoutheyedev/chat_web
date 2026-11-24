@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SITEMAP.XML — ChatSphere
+  Submit this file to Google Search Console for indexing
+  URL: https://chatsphere.com/sitemap.xml
+  
+  After uploading:
+  1. Go to https://search.google.com/search-console
+  2. Add your property (domain)
+  3. Submit sitemap: https://chatsphere.com/sitemap.xml
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage — Highest priority, changes often -->
+  <url>
+    <loc>https://chatsphere.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Random Chat -->
+  <url>
+    <loc>https://chatsphere.com/random-chat.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Voice Call -->
+  <url>
+    <loc>https://chatsphere.com/voice-chat.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Video Chat -->
+  <url>
+    <loc>https://chatsphere.com/video-chat.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Chat Rooms -->
+  <url>
+    <loc>https://chatsphere.com/chat-rooms.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- About Page -->
+  <url>
+    <loc>https://chatsphere.com/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Safety Center -->
+  <url>
+    <loc>https://chatsphere.com/safety.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Privacy Policy — Required for AdSense -->
+  <url>
+    <loc>https://chatsphere.com/privacy-policy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+  <!-- Terms of Service — Required for AdSense -->
+  <url>
+    <loc>https://chatsphere.com/terms-conditions.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <lastmod>2024-01-01</lastmod>
+  </url>
+
+</urlset>
