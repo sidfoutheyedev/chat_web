@@ -38,6 +38,14 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
   const onSignalRef = useRef(onSignal);
   onSignalRef.current = onSignal;
 
+  // Keep latest profile/roomId in refs so connect() doesn't recreate on every profile change
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
+  const roomIdRef = useRef(roomId);
+  roomIdRef.current = roomId;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+
   const connect = useCallback(() => {
     if (typeof window === "undefined") return;
 
@@ -50,19 +58,19 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    const wsUrl = `${protocol}//${host}`;
+    const wsUrl = `${protocol}//${host}/ws`;
 
     setStatus("searching");
     const ws = new WebSocket(wsUrl);
     socketRef.current = ws;
 
     ws.onopen = () => {
-      // Send join message
+      // Send join message with latest profile/mode from refs (avoids stale closure)
       ws.send(JSON.stringify({
         type: "join",
-        mode,
-        roomId,
-        profile
+        mode: modeRef.current,
+        roomId: roomIdRef.current,
+        profile: profileRef.current
       }));
     };
 
@@ -167,7 +175,9 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
       console.warn("WebSocket error:", err);
       setStatus("disconnected");
     };
-  }, [mode, profile, roomId]);
+  // connect() is stable — no deps other than autoConnect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (autoConnect) {
@@ -178,7 +188,9 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
         socketRef.current.close();
       }
     };
-  }, [connect, autoConnect]);
+  // Only run on mount — profile/mode/roomId changes are handled via refs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoConnect]);
 
   const sendMessage = useCallback((text: string) => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) return;
@@ -252,8 +264,12 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       }
     ]);
+    // Send full join payload so server re-queues with correct mode & profile
     socketRef.current.send(JSON.stringify({
-      type: "next"
+      type: "next",
+      mode: modeRef.current,
+      profile: profileRef.current,
+      roomId: roomIdRef.current
     }));
   }, [connect]);
 

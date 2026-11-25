@@ -52,7 +52,7 @@ export default function VoicePage() {
       console.warn("Could not load user profile", e);
     }
   }, []);
-
+  
   // WebRTC socket connection
   const {
     status: socketStatus,
@@ -60,7 +60,8 @@ export default function VoicePage() {
     isInitiator,
     sendSignal,
     nextStranger,
-    disconnect
+    disconnect,
+    reconnect
   } = useChatSocket({
     mode: "voice",
     profile: myProfile,

@@ -85,10 +85,10 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recordIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load user profile from sessionStorage
+  // Load user profile from localStorage (shared with voice/video pages)
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem("cs_user_profile");
+      const saved = localStorage.getItem("cs_user_profile");
       if (saved) {
         const parsed = JSON.parse(saved);
         setMyProfile({
@@ -102,7 +102,6 @@ export default function ChatPage() {
       // ignore
     }
   }, []);
-
   // Real-time WebSocket Omegle hook
   const {
     status,
@@ -239,7 +238,7 @@ export default function ChatPage() {
   // Save profile updates
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    sessionStorage.setItem("cs_user_profile", JSON.stringify(myProfile));
+    localStorage.setItem("cs_user_profile", JSON.stringify(myProfile));
     setEditProfileOpen(false);
     nextStranger();
   };

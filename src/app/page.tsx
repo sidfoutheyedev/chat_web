@@ -40,7 +40,7 @@ export default function HomePage() {
   // Load saved profile if available
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem("cs_user_profile");
+      const saved = localStorage.getItem("cs_user_profile");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.name) setName(parsed.name);
@@ -71,7 +71,7 @@ export default function HomePage() {
   const handleStart = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Save profile to sessionStorage
+    // Save profile to localStorage (shared across all pages)
     const profile = {
       name: name.trim() || "Anonymous",
       gender: gender || "unspecified",
@@ -79,7 +79,7 @@ export default function HomePage() {
       lookingFor,
       interests: selectedInterests
     };
-    sessionStorage.setItem("cs_user_profile", JSON.stringify(profile));
+    localStorage.setItem("cs_user_profile", JSON.stringify(profile));
 
     if (selectedMode === "voice") router.push("/voice");
     else if (selectedMode === "video") router.push("/video");

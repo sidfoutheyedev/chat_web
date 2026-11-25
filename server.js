@@ -4,7 +4,7 @@ const { Server: WebSocketServer } = require('ws');
 
 const port = parseInt(process.env.PORT || '3000', 10);
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev, dir: __dirname });
+const app = next({ dev, dir: __dirname, webpack: true });
 const handle = app.getRequestHandler();
 
 // Each mode has its own queue; topic rooms get a separate text queue per room.
@@ -99,7 +99,17 @@ app.prepare().then(() => {
     handle(req, res);
   });
 
-  const wss = new WebSocketServer({ server });
+  const wss = new WebSocketServer({ noServer: true });
+
+  server.on('upgrade', (req, socket, head) => {
+    const pathname = (req.url || '').split('?')[0];
+    if (pathname === '/ws') {
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        wss.emit('connection', ws, req);
+      });
+    }
+    // Let Next.js handle /_next/webpack-hmr and other internal upgrades
+  });
 
   wss.on('connection', (ws) => {
     totalConnected++;
@@ -202,14 +212,27 @@ app.prepare().then(() => {
             }
             removeFromQueue(ws);
 
-            if (data.type === 'next' && ws.queueKey) {
-              const queue = getQueue(ws.queueKey);
-              queue.push(ws);
-              ws.send(JSON.stringify({ 
-                type: 'waiting', 
-                queueLength: queue.length 
-              }));
-              matchUsers(ws.queueKey);
+            if (data.type === 'next') {
+              // Update profile/mode if client sent them along with 'next'
+              if (data.profile) ws.profile = data.profile;
+              if (data.mode && ['text', 'voice', 'video'].includes(data.mode)) {
+                ws.currentMode = data.mode;
+                const requestedRoom = typeof data.roomId === 'string' ? data.roomId : '';
+                ws.roomId = ws.currentMode === 'text' && /^[a-z0-9-]{1,40}$/.test(requestedRoom)
+                  ? requestedRoom
+                  : null;
+                ws.queueKey = ws.roomId ? `room:${ws.roomId}` : `mode:${ws.currentMode}`;
+              }
+
+              if (ws.queueKey) {
+                const queue = getQueue(ws.queueKey);
+                queue.push(ws);
+                ws.send(JSON.stringify({ 
+                  type: 'waiting', 
+                  queueLength: queue.length 
+                }));
+                matchUsers(ws.queueKey);
+              }
             }
             break;
           }
