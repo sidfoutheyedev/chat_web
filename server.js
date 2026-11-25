@@ -10,6 +10,9 @@ const handle = app.getRequestHandler();
 // Each mode has its own queue; topic rooms get a separate text queue per room.
 const queues = new Map();
 
+// Isolated group chat rooms (city rooms)
+const chatRooms = new Map();
+
 // Track online stats
 let totalConnected = 0;
 
@@ -29,68 +32,68 @@ function getQueue(queueKey) {
   return queues.get(queueKey);
 }
 
+function isCompatible(userA, userB) {
+  const aPref = userA.profile?.lookingFor;
+  const bPref = userB.profile?.lookingFor;
+  const aWantsB = !aPref || aPref === 'any' || aPref === 'anyone' || aPref === userB.profile?.gender;
+  const bWantsA = !bPref || bPref === 'any' || bPref === 'anyone' || bPref === userA.profile?.gender;
+  return aWantsB && bWantsA;
+}
+
+function pairUsers(userA, userB) {
+  userA.partner = userB;
+  userB.partner = userA;
+  userA.lastPartner = userB;
+  userB.lastPartner = userA;
+
+  userA.send(JSON.stringify({
+    type: 'matched',
+    partnerProfile: userB.profile || { name: 'Stranger', gender: 'other', age: '21' },
+    initiator: true
+  }));
+
+  userB.send(JSON.stringify({
+    type: 'matched',
+    partnerProfile: userA.profile || { name: 'Stranger', gender: 'other', age: '21' },
+    initiator: false
+  }));
+}
+
 function matchUsers(queueKey) {
   const queue = queues.get(queueKey);
   if (!queue || queue.length < 2) return;
 
-  // Simple FIFO match or preference-based
-  // Try to match users respecting preferences
-  let matched = false;
-  for (let i = 0; i < queue.length - 1; i++) {
-    const userA = queue[i];
-    for (let j = i + 1; j < queue.length; j++) {
-      const userB = queue[j];
+  // Pair all available free users in this isolated pool
+  while (queue.length >= 2) {
+    let matched = false;
 
-      // Check preference compatibility
-      const aWantsB = !userA.profile?.lookingFor || userA.profile.lookingFor === 'anyone' || userA.profile.lookingFor === userB.profile?.gender;
-      const bWantsA = !userB.profile?.lookingFor || userB.profile.lookingFor === 'anyone' || userB.profile.lookingFor === userA.profile?.gender;
-
-      if (aWantsB && bWantsA) {
-        // Pair userA and userB
-        queue.splice(j, 1);
-        queue.splice(i, 1);
-
-        userA.partner = userB;
-        userB.partner = userA;
-
-        userA.send(JSON.stringify({
-          type: 'matched',
-          partnerProfile: userB.profile || { name: 'Stranger', gender: 'other', age: '21' },
-          initiator: true
-        }));
-
-        userB.send(JSON.stringify({
-          type: 'matched',
-          partnerProfile: userA.profile || { name: 'Stranger', gender: 'other', age: '21' },
-          initiator: false
-        }));
-
-        matched = true;
-        break;
+    // 1. Prefer compatible users who weren't just paired together
+    for (let i = 0; i < queue.length - 1; i++) {
+      const userA = queue[i];
+      for (let j = i + 1; j < queue.length; j++) {
+        const userB = queue[j];
+        if (userA.lastPartner === userB && queue.length > 2) continue;
+        if (isCompatible(userA, userB)) {
+          queue.splice(j, 1);
+          queue.splice(i, 1);
+          pairUsers(userA, userB);
+          matched = true;
+          break;
+        }
       }
+      if (matched) break;
     }
-    if (matched) break;
-  }
 
-  // If no strict preference match after some wait, pair top two to avoid stalling
-  if (!matched && queue.length >= 2) {
-    const userA = queue.shift();
-    const userB = queue.shift();
-
-    userA.partner = userB;
-    userB.partner = userA;
-
-    userA.send(JSON.stringify({
-      type: 'matched',
-      partnerProfile: userB.profile || { name: 'Stranger', gender: 'other', age: '21' },
-      initiator: true
-    }));
-
-    userB.send(JSON.stringify({
-      type: 'matched',
-      partnerProfile: userA.profile || { name: 'Stranger', gender: 'other', age: '21' },
-      initiator: false
-    }));
+    // 2. Fallback: pair any two free users (avoiding immediate re-match if >2 waiting)
+    if (!matched && queue.length >= 2) {
+      const userA = queue.shift();
+      let partnerIdx = 0;
+      if (queue.length > 1 && userA.lastPartner === queue[0]) {
+        partnerIdx = 1;
+      }
+      const userB = queue.splice(partnerIdx, 1)[0];
+      pairUsers(userA, userB);
+    }
   }
 }
 
@@ -201,6 +204,159 @@ app.prepare().then(() => {
             break;
           }
 
+          // ─────────────────────────────────────────────────────
+          // CITY CHAT ROOMS (group, isolated per room)
+          // ─────────────────────────────────────────────────────
+          case 'room-join': {
+            const rId = typeof data.roomId === 'string' ? data.roomId.slice(0, 60) : '';
+            if (!rId) break;
+
+            // Leave previous room if any
+            if (ws.chatRoom) {
+              const prevRoom = chatRooms.get(ws.chatRoom);
+              if (prevRoom) {
+                prevRoom.delete(ws);
+                // Notify others
+                prevRoom.forEach(member => {
+                  try { member.send(JSON.stringify({ type: 'room-user-left', userId: ws.chatRoomUserId, userName: ws.chatRoomProfile?.name })); } catch(_){}
+                });
+              }
+            }
+
+            ws.chatRoom = rId;
+            ws.chatRoomProfile = data.profile || { name: 'Anonymous', color: 'bg-purple-500' };
+            ws.chatRoomUserId = `${rId}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+
+            if (!chatRooms.has(rId)) chatRooms.set(rId, new Set());
+            const room = chatRooms.get(rId);
+
+            // Send current room state to joiner
+            const roomUsers = [...room].map(m => ({
+              id: m.chatRoomUserId,
+              name: m.chatRoomProfile?.name || 'Anonymous',
+              color: m.chatRoomProfile?.color || 'bg-purple-500',
+              initial: (m.chatRoomProfile?.name || 'A')[0].toUpperCase()
+            }));
+            ws.send(JSON.stringify({ type: 'room-state', users: roomUsers, cityName: rId }));
+
+            // Notify others of new joiner
+            room.forEach(member => {
+              try { member.send(JSON.stringify({
+                type: 'room-user-joined',
+                user: { id: ws.chatRoomUserId, name: ws.chatRoomProfile.name, color: ws.chatRoomProfile.color || 'bg-purple-500', initial: ws.chatRoomProfile.name[0].toUpperCase() }
+              })); } catch(_){}
+            });
+
+            room.add(ws);
+            break;
+          }
+
+          case 'room-leave': {
+            if (ws.chatRoom) {
+              const room = chatRooms.get(ws.chatRoom);
+              if (room) {
+                room.delete(ws);
+                room.forEach(member => {
+                  try { member.send(JSON.stringify({ type: 'room-user-left', userId: ws.chatRoomUserId, userName: ws.chatRoomProfile?.name })); } catch(_){}
+                });
+                if (room.size === 0) chatRooms.delete(ws.chatRoom);
+              }
+              ws.chatRoom = null;
+              ws.chatRoomProfile = null;
+              ws.chatRoomUserId = null;
+            }
+            break;
+          }
+
+          case 'room-message': {
+            if (!ws.chatRoom) break;
+            const room = chatRooms.get(ws.chatRoom);
+            if (!room) break;
+            const payload = JSON.stringify({
+              type: 'room-message',
+              msgId: data.msgId || `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              fromId: ws.chatRoomUserId,
+              fromName: ws.chatRoomProfile?.name || 'Anonymous',
+              fromColor: ws.chatRoomProfile?.color || 'bg-purple-500',
+              text: data.text,
+              time: data.time
+            });
+            room.forEach(member => {
+              if (member !== ws && member.readyState === ws.OPEN) {
+                try { member.send(payload); } catch(_){}
+              }
+            });
+            break;
+          }
+
+          case 'room-voice-note': {
+            if (!ws.chatRoom) break;
+            const room = chatRooms.get(ws.chatRoom);
+            if (!room) break;
+            const payload = JSON.stringify({
+              type: 'room-voice-note',
+              msgId: data.msgId || `vn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              fromId: ws.chatRoomUserId,
+              fromName: ws.chatRoomProfile?.name || 'Anonymous',
+              fromColor: ws.chatRoomProfile?.color || 'bg-purple-500',
+              audioData: data.audioData,
+              voiceDuration: data.voiceDuration,
+              time: data.time
+            });
+            room.forEach(member => {
+              if (member !== ws && member.readyState === ws.OPEN) {
+                try { member.send(payload); } catch(_){}
+              }
+            });
+            break;
+          }
+
+          case 'room-signal': {
+            // WebRTC signal for in-room voice call
+            if (!ws.chatRoom) break;
+            const room = chatRooms.get(ws.chatRoom);
+            if (!room) break;
+            const targetId = data.toId;
+            room.forEach(member => {
+              if (member.chatRoomUserId === targetId && member.readyState === ws.OPEN) {
+                try { member.send(JSON.stringify({ type: 'room-signal', fromId: ws.chatRoomUserId, data: data.data })); } catch(_){}
+              }
+            });
+            break;
+          }
+
+          case 'room-reaction': {
+            // Broadcast emoji reaction to all room members
+            if (!ws.chatRoom) break;
+            const room = chatRooms.get(ws.chatRoom);
+            if (!room) break;
+            const payload = JSON.stringify({
+              type: 'room-reaction',
+              msgId: data.msgId,
+              emoji: data.emoji,
+              fromId: ws.chatRoomUserId,
+              fromName: ws.chatRoomProfile?.name || 'Anonymous'
+            });
+            room.forEach(member => {
+              if (member !== ws && member.readyState === ws.OPEN) {
+                try { member.send(payload); } catch(_){}
+              }
+            });
+            break;
+          }
+
+          case 'room-speaking': {
+            if (!ws.chatRoom) break;
+            const room = chatRooms.get(ws.chatRoom);
+            if (!room) break;
+            room.forEach(member => {
+              if (member !== ws && member.readyState === ws.OPEN) {
+                try { member.send(JSON.stringify({ type: 'room-speaking', userId: ws.chatRoomUserId, speaking: !!data.speaking })); } catch(_){}
+              }
+            });
+            break;
+          }
+
           case 'leave':
           case 'next': {
             if (ws.partner) {
@@ -252,6 +408,17 @@ app.prepare().then(() => {
         ws.partner = null;
       }
       removeFromQueue(ws);
+      // Clean up chat room membership
+      if (ws.chatRoom) {
+        const room = chatRooms.get(ws.chatRoom);
+        if (room) {
+          room.delete(ws);
+          room.forEach(member => {
+            try { member.send(JSON.stringify({ type: 'room-user-left', userId: ws.chatRoomUserId, userName: ws.chatRoomProfile?.name })); } catch(_){}
+          });
+          if (room.size === 0) chatRooms.delete(ws.chatRoom);
+        }
+      }
     });
 
     ws.on('error', (err) => {

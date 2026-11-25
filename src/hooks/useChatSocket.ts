@@ -24,9 +24,10 @@ interface UseChatSocketOptions {
   roomId?: string | null;
   onSignal?: (data: any) => void;
   autoConnect?: boolean;
+  autoNext?: boolean;
 }
 
-export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = true }: UseChatSocketOptions) {
+export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = true, autoNext = false }: UseChatSocketOptions) {
   const [status, setStatus] = useState<"disconnected" | "searching" | "connected">("disconnected");
   const [partnerProfile, setPartnerProfile] = useState<UserProfile | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -45,6 +46,9 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
   roomIdRef.current = roomId;
   const modeRef = useRef(mode);
   modeRef.current = mode;
+  const autoNextRef = useRef(autoNext);
+  autoNextRef.current = autoNext;
+  const autoNextTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -149,16 +153,42 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
           }
 
           case "partner-disconnected": {
-            setStatus("disconnected");
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `sys-${Date.now()}`,
-                sender: "system",
-                text: `⚠️ Stranger has disconnected. Click "Next" to find a new stranger.`,
-                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              }
-            ]);
+            setIsPartnerTyping(false);
+            if (autoNextRef.current) {
+              setStatus("searching");
+              setPartnerProfile(null);
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: `sys-${Date.now()}`,
+                  sender: "system",
+                  text: `🔄 Stranger disconnected. Auto-connecting to the next free stranger...`,
+                  time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                }
+              ]);
+              if (autoNextTimerRef.current) clearTimeout(autoNextTimerRef.current);
+              autoNextTimerRef.current = setTimeout(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({
+                    type: "next",
+                    mode: modeRef.current,
+                    profile: profileRef.current,
+                    roomId: roomIdRef.current
+                  }));
+                }
+              }, 800);
+            } else {
+              setStatus("disconnected");
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: `sys-${Date.now()}`,
+                  sender: "system",
+                  text: `⚠️ Stranger has disconnected. Click "Find Stranger" or enable Auto-Next to connect to someone new.`,
+                  time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                }
+              ]);
+            }
             break;
           }
         }

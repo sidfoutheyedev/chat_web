@@ -22,6 +22,7 @@ export default function VideoPage() {
   const [hasCamPermission, setHasCamPermission] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [autoNext, setAutoNext] = useState(true);
   const [myProfile, setMyProfile] = useState<UserProfile>({
     name: "Anonymous",
     gender: "male",
@@ -57,6 +58,7 @@ export default function VideoPage() {
     mode: "video",
     profile: myProfile,
     autoConnect: true,
+    autoNext,
     onSignal: async (data) => {
       try {
         if (!pcRef.current) return;
@@ -312,6 +314,26 @@ export default function VideoPage() {
         >
           <Flag className="w-4 h-4" />
         </button>
+
+        {/* Auto-Next on Disconnect Toggle */}
+        <label className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-full bg-white/[0.03] border border-white/10 cursor-pointer select-none">
+          <span className="text-xs text-slate-300 font-medium">Auto-Next</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={autoNext}
+            onClick={() => setAutoNext((prev) => !prev)}
+            className={`w-9 h-5 rounded-full transition-colors p-0.5 cursor-pointer ${
+              autoNext ? "bg-emerald-500" : "bg-slate-700"
+            }`}
+          >
+            <span
+              className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                autoNext ? "translate-x-4" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </label>
 
       </div>
 

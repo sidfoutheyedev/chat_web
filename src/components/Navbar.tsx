@@ -11,7 +11,8 @@ import {
   ShieldCheck, 
   Menu, 
   X,
-  Sparkles
+  Sparkles,
+  Radio
 } from "lucide-react";
 import { useLiveCounter } from "@/hooks/useLiveCounter";
 
@@ -24,6 +25,7 @@ export function Navbar() {
     { name: "Random Text", href: "/chat", icon: MessageSquare },
     { name: "Voice Call", href: "/voice", icon: Mic, highlight: true },
     { name: "Video Cam", href: "/video", icon: Video },
+    { name: "City Rooms", href: "/chatrooms", icon: Radio },
     { name: "Chat Rooms", href: "/rooms", icon: Compass },
     { name: "Safety", href: "/safety", icon: ShieldCheck },
   ];

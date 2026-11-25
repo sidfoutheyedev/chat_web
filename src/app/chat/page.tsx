@@ -5,15 +5,18 @@ import Link from "next/link";
 import { 
   Send, 
   Mic, 
+  MicOff,
   Square, 
   Video, 
   PhoneCall, 
+  PhoneOff,
   RotateCw, 
   Flag, 
   Ban, 
   Compass, 
   ShieldCheck, 
   Play,
+  Pause,
   User,
   Settings2,
   Sparkles,
@@ -30,6 +33,7 @@ interface Message {
   sender: "me" | "them" | "system";
   text?: string;
   isVoice?: boolean;
+  audioData?: string;
   voiceDuration?: string;
   time: string;
 }
@@ -62,6 +66,36 @@ const DEMO_RESPONSES = [
   "Cool, where in the world are you chatting from?"
 ];
 
+
+// ── Voice Note Player Component ──────────────────────────────────
+function VoiceNotePlayer({ audioData, duration }: { audioData?: string; duration?: string }) {
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggle = () => {
+    if (!audioData) return;
+    if (!audioRef.current) {
+      try {
+        const src = audioData.startsWith("data:") ? audioData : `data:audio/webm;base64,${audioData}`;
+        const a = new Audio(src);
+        audioRef.current = a;
+        a.onended = () => setPlaying(false);
+        a.onerror = () => { setPlaying(false); };
+      } catch { return; }
+    }
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else { audioRef.current.play().catch(() => setPlaying(false)); setPlaying(true); }
+  };
+
+  return (
+    <button onClick={toggle} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition">
+      {playing ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white fill-white" />}
+      <span className="text-xs text-white/80">Voice Note</span>
+      <span className="text-xs text-white/50">{duration || "0:05"}</span>
+    </button>
+  );
+}
+
 export default function ChatPage() {
   // My Profile state
   const [myProfile, setMyProfile] = useState<UserProfile>({
@@ -81,9 +115,19 @@ export default function ChatPage() {
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [chatTimer, setChatTimer] = useState(0);
   const [searchSeconds, setSearchSeconds] = useState(0);
+  const [autoNext, setAutoNext] = useState(true);
+
+  // Personal in-chat voice call state (stays inside /chat, isolated from /voice pool)
+  const [callState, setCallState] = useState<"idle" | "calling" | "incoming" | "in-call">("idle");
+  const [isCallMuted, setIsCallMuted] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recordIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const callPcRef = useRef<RTCPeerConnection | null>(null);
+  const callStreamRef = useRef<MediaStream | null>(null);
+  const remoteCallAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Load user profile from localStorage (shared with voice/video pages)
   useEffect(() => {
@@ -102,6 +146,55 @@ export default function ChatPage() {
       // ignore
     }
   }, []);
+  const cleanupCall = () => {
+    if (callPcRef.current) {
+      callPcRef.current.close();
+      callPcRef.current = null;
+    }
+    if (callStreamRef.current) {
+      callStreamRef.current.getTracks().forEach((t) => t.stop());
+      callStreamRef.current = null;
+    }
+    if (remoteCallAudioRef.current) {
+      remoteCallAudioRef.current.srcObject = null;
+    }
+    setCallState("idle");
+    setIsCallMuted(false);
+  };
+
+  const setupCallPeerConnection = async (sendOffer: boolean) => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    callStreamRef.current = stream;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    });
+    callPcRef.current = pc;
+
+    stream.getAudioTracks().forEach((track) => pc.addTrack(track, stream));
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        sendSignal({ kind: "call-ice", candidate: event.candidate });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (remoteCallAudioRef.current) {
+        remoteCallAudioRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    if (sendOffer) {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal({ kind: "call-sdp", sdp: offer });
+    }
+  };
+
   // Real-time WebSocket Omegle hook
   const {
     status,
@@ -111,14 +204,87 @@ export default function ChatPage() {
     sendMessage,
     sendVoiceNote,
     sendTyping,
+    sendSignal,
     nextStranger,
     disconnect
   } = useChatSocket({
     mode: "text",
     profile: myProfile,
     roomId,
-    autoConnect: true
+    autoConnect: true,
+    autoNext,
+    onSignal: async (data) => {
+      try {
+        if (data?.kind === "call-request") {
+          setCallState("incoming");
+        } else if (data?.kind === "call-accept") {
+          setCallState("in-call");
+          await setupCallPeerConnection(true);
+        } else if (data?.kind === "call-reject" || data?.kind === "call-end") {
+          cleanupCall();
+        } else if (data?.kind === "call-sdp") {
+          if (!callPcRef.current) {
+            await setupCallPeerConnection(false);
+          }
+          if (!callPcRef.current) return;
+          await callPcRef.current.setRemoteDescription(new RTCSessionDescription(data.sdp));
+          if (data.sdp.type === "offer") {
+            const answer = await callPcRef.current.createAnswer();
+            await callPcRef.current.setLocalDescription(answer);
+            sendSignal({ kind: "call-sdp", sdp: answer });
+          }
+        } else if (data?.kind === "call-ice" && callPcRef.current) {
+          await callPcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+        }
+      } catch (err) {
+        console.warn("In-chat voice call signal error:", err);
+      }
+    }
   });
+
+  // Clean up personal voice call if chat disconnects or partner changes
+  useEffect(() => {
+    if (status !== "connected") {
+      cleanupCall();
+    }
+  }, [status]);
+
+  const startInChatCall = () => {
+    if (status !== "connected") return;
+    setCallState("calling");
+    sendSignal({ kind: "call-request" });
+  };
+
+  const acceptInChatCall = async () => {
+    try {
+      setCallState("in-call");
+      await setupCallPeerConnection(false);
+      sendSignal({ kind: "call-accept" });
+    } catch {
+      alert("Microphone access is required for voice call.");
+      rejectInChatCall();
+    }
+  };
+
+  const rejectInChatCall = () => {
+    sendSignal({ kind: "call-reject" });
+    cleanupCall();
+  };
+
+  const endInChatCall = () => {
+    sendSignal({ kind: "call-end" });
+    cleanupCall();
+  };
+
+  const toggleCallMute = () => {
+    if (callStreamRef.current) {
+      const nextMuted = !isCallMuted;
+      callStreamRef.current.getAudioTracks().forEach((t) => {
+        t.enabled = !nextMuted;
+      });
+      setIsCallMuted(nextMuted);
+    }
+  };
 
   // Confetti on match
   useEffect(() => {
@@ -220,18 +386,40 @@ export default function ChatPage() {
     }, 2000);
   };
 
-  // Send voice note
-  const handleSendVoiceNote = () => {
+  // Send voice note (real MediaRecorder for actual audio playback)
+  const handleSendVoiceNote = async () => {
     if (!isRecording) {
       if (status !== "connected") {
         alert("Connect with a stranger first before sending voice notes!");
         return;
       }
-      setIsRecording(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mr = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        recordedChunksRef.current = [];
+        mr.ondataavailable = (e: BlobEvent) => { if (e.data.size > 0) recordedChunksRef.current.push(e.data); };
+        mr.onstop = () => {
+          const blob = new Blob(recordedChunksRef.current, { type: "audio/webm" });
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(",")[1];
+            const dur = `0:${recordSeconds.toString().padStart(2, "0")}`;
+            sendVoiceNote(base64, dur);
+          };
+          reader.readAsDataURL(blob);
+          stream.getTracks().forEach((t) => t.stop());
+        };
+        mr.start();
+        mediaRecorderRef.current = mr;
+        setIsRecording(true);
+      } catch {
+        alert("Microphone access required to record voice notes.");
+      }
     } else {
       setIsRecording(false);
-      const durationStr = `0:${recordSeconds.toString().padStart(2, "0")}`;
-      sendVoiceNote(`Voice Note Audio (${durationStr})`, durationStr);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
     }
   };
 
@@ -333,6 +521,26 @@ export default function ChatPage() {
               {status === "connected" ? "Skip to Next Stranger" : status === "searching" ? "Cancel Search" : "Find Stranger"}
             </span>
           </button>
+
+          {/* Auto-Next on Disconnect Toggle */}
+          <label className="flex items-center justify-between pt-2 border-t border-white/5 cursor-pointer select-none">
+            <span className="text-xs text-slate-300 font-medium">Auto-Next on Disconnect</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoNext}
+              onClick={() => setAutoNext((prev) => !prev)}
+              className={`w-10 h-5 rounded-full transition-colors p-0.5 cursor-pointer ${
+                autoNext ? "bg-emerald-500" : "bg-slate-700"
+              }`}
+            >
+              <span
+                className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                  autoNext ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </label>
         </div>
 
         {/* Quick Channels Switch */}
@@ -419,14 +627,38 @@ export default function ChatPage() {
 
           {/* Quick Header Controls */}
           <div className="flex items-center gap-2">
-            <Link
-              href="/voice"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-semibold transition"
-              title="Switch to Voice Call"
-            >
-              <PhoneCall className="w-3.5 h-3.5" />
-              <span>Voice Call</span>
-            </Link>
+            {status === "connected" && callState === "idle" && (
+              <button
+                onClick={startInChatCall}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
+                title="Personal Voice Call inside this chat (stays in chat)"
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                <span>Voice Call</span>
+              </button>
+            )}
+
+            {callState === "calling" && (
+              <button
+                onClick={endInChatCall}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 text-yellow-300 text-xs font-semibold transition cursor-pointer animate-pulse"
+                title="Cancel Voice Call"
+              >
+                <PhoneOff className="w-3.5 h-3.5" />
+                <span>Calling...</span>
+              </button>
+            )}
+
+            {callState === "in-call" && (
+              <button
+                onClick={endInChatCall}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-semibold transition cursor-pointer"
+                title="End Voice Call"
+              >
+                <PhoneOff className="w-3.5 h-3.5" />
+                <span>End Call</span>
+              </button>
+            )}
 
             <button
               onClick={() => alert("User has been reported to moderation. Thank you for keeping ChatSphere safe.")}
@@ -448,6 +680,60 @@ export default function ChatPage() {
             </button>
           </div>
         </header>
+
+        {/* Hidden audio element for personal in-chat WebRTC voice call */}
+        <audio ref={remoteCallAudioRef} autoPlay />
+
+        {/* Incoming / Active Personal In-Chat Voice Call Banner */}
+        {callState === "incoming" && (
+          <div className="px-4 sm:px-6 py-2.5 bg-emerald-950/50 border-b border-emerald-500/30 flex items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 text-xs text-emerald-200 font-semibold">
+              <PhoneCall className="w-4 h-4 text-emerald-400 animate-bounce" />
+              <span>{strangerProfile?.name || "Stranger"} is calling you (Private in-chat voice call)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={acceptInChatCall}
+                className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer transition"
+              >
+                Accept
+              </button>
+              <button
+                onClick={rejectInChatCall}
+                className="px-3 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer transition"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        )}
+
+        {callState === "in-call" && (
+          <div className="px-4 sm:px-6 py-2 bg-emerald-950/40 border-b border-emerald-500/20 flex items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 text-xs text-emerald-300 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-dot" />
+              <span>Private voice call active with {strangerProfile?.name || "Stranger"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleCallMute}
+                className={`p-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer transition ${
+                  isCallMuted ? "bg-rose-500/20 text-rose-300" : "bg-white/10 text-slate-200 hover:bg-white/15"
+                }`}
+                title={isCallMuted ? "Unmute Mic" : "Mute Mic"}
+              >
+                {isCallMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                <span>{isCallMuted ? "Muted" : "Mic On"}</span>
+              </button>
+              <button
+                onClick={endInChatCall}
+                className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer transition"
+              >
+                End
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
@@ -480,15 +766,7 @@ export default function ChatPage() {
                   }`}
                 >
                   {msg.isVoice ? (
-                    <div className="flex items-center gap-3">
-                      <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
-                        <Play className="w-4 h-4 fill-white" />
-                      </button>
-                      <div className="space-y-1">
-                        <div className="w-28 sm:w-36 h-2 bg-white/20 rounded-full" />
-                        <span className="text-[10px] text-white/70 block">Voice Note ({msg.voiceDuration})</span>
-                      </div>
-                    </div>
+                    <VoiceNotePlayer audioData={msg.text} duration={msg.voiceDuration} />
                   ) : (
                     <span>{msg.text}</span>
                   )}
