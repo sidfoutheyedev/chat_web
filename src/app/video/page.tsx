@@ -188,10 +188,10 @@ export default function VideoPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100dvh-64px)] overflow-hidden bg-[#07070b]">
+    <div className="w-full flex flex-col h-[calc(100dvh-104px)] min-h-[540px] shrink-0 overflow-hidden bg-[#07070b]">
       
       {/* Video Screens Split */}
-      <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-2 p-2 sm:p-4">
+      <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-3 p-3 sm:p-4">
         
         {/* Stranger's Video Frame */}
         <div className="relative h-full min-h-0 w-full rounded-2xl bg-[#0f0f18] border border-white/5 overflow-hidden flex items-center justify-center">
@@ -201,7 +201,7 @@ export default function VideoPage() {
             ref={remoteVideoRef}
             autoPlay
             playsInline
-            className={`absolute inset-0 w-full h-full object-contain bg-black ${status === "connected" ? "block" : "hidden"}`}
+            className={`absolute inset-0 w-full h-full object-cover ${status === "connected" ? "block" : "hidden"}`}
           />
 
           {status !== "connected" && (
@@ -234,7 +234,7 @@ export default function VideoPage() {
             autoPlay
             playsInline
             muted
-            className={`absolute inset-0 w-full h-full object-contain bg-black -scale-x-100 ${isCamOff ? "hidden" : "block"}`}
+            className={`absolute inset-0 w-full h-full object-cover -scale-x-100 ${isCamOff ? "hidden" : "block"}`}
           />
 
           {(!hasCamPermission || isCamOff) && (

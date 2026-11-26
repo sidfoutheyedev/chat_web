@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AgeGateModal } from "@/components/AgeGateModal";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://chatsphere.com").replace(/\/+$/, "");
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://talktostranger.online").replace(/\/+$/, "");
 
 export const metadata: Metadata = {
   title: "TalkToStranger - Talk to Strangers Online | Free Anonymous Chat & Voice",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     description: "Instant stranger matching with text, voice, video cam, and public rooms.",
     type: "website",
     url: SITE_URL,
-    siteName: "ChatSphere",
+    siteName: "TalkToStranger",
   },
   twitter: {
     card: "summary_large_image",

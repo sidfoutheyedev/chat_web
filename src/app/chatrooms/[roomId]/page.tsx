@@ -601,12 +601,12 @@ export default function RoomDetailPage() {
   ];
 
   return (
-    <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-64px)] bg-[#090b0f] p-3 sm:p-6">
+    <div className="w-full flex items-center justify-center h-[calc(100dvh-104px)] min-h-[520px] shrink-0 overflow-hidden bg-[#090b0f] p-3 sm:p-6">
       {/* Centered Room Panel (matching reference modal layout) */}
       <div
         className={`w-full ${
           chatOpen ? "max-w-5xl" : "max-w-3xl"
-        } h-[78vh] min-h-[520px] bg-[#14171d] border border-white/[0.08] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200`}
+        } h-full max-h-[78vh] min-h-[460px] bg-[#14171d] border border-white/[0.08] rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-200`}
       >
         {/* Top Bar */}
         <div className="px-5 py-4 flex items-center justify-between gap-3 border-b border-white/[0.05] shrink-0">

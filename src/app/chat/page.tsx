@@ -436,10 +436,55 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-[calc(100dvh-64px)] overflow-hidden bg-[#09090f]">
-      
-      {/* Sidebar Controls */}
-      <aside className="w-full md:w-80 bg-[#0d0d16] border-b md:border-b-0 md:border-r border-white/5 p-4 sm:p-5 flex flex-col gap-4 shrink-0 overflow-y-auto">
+    <div className="w-full flex flex-col md:flex-row h-[calc(100dvh-104px)] min-h-[480px] shrink-0 overflow-hidden bg-[#09090f]">
+
+      {/* Mobile Compact Control Strip (keeps 85%+ screen for chat on phones) */}
+      <div className="md:hidden bg-[#0d0d16] border-b border-white/5 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+        <button
+          onClick={handleFindOrSkip}
+          className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            status === "connected"
+              ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+              : status === "searching"
+              ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
+              : "bg-gradient-to-r from-purple-600 to-cyan-500 text-white"
+          }`}
+        >
+          <RotateCw className={`w-3.5 h-3.5 ${status === "searching" ? "animate-spin" : ""}`} />
+          <span>{status === "connected" ? "Skip" : status === "searching" ? "Cancel" : "Find"}</span>
+        </button>
+
+        <label className="flex items-center gap-1.5 text-[11px] text-slate-300 font-medium cursor-pointer select-none whitespace-nowrap">
+          <span>Auto-Next</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={autoNext}
+            onClick={() => setAutoNext((prev) => !prev)}
+            className={`w-8 h-4.5 rounded-full transition-colors p-0.5 cursor-pointer ${
+              autoNext ? "bg-emerald-500" : "bg-slate-700"
+            }`}
+          >
+            <span
+              className={`block w-3.5 h-3.5 rounded-full bg-white transition-transform ${
+                autoNext ? "translate-x-3.5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </label>
+
+        <button
+          onClick={() => setEditProfileOpen(true)}
+          className="px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer whitespace-nowrap"
+          title="Edit Profile"
+        >
+          <Settings2 className="w-3.5 h-3.5" />
+          <span>Profile</span>
+        </button>
+      </div>
+
+      {/* Desktop Sidebar Controls */}
+      <aside className="hidden md:flex w-80 bg-[#0d0d16] border-r border-white/5 p-5 flex-col gap-4 shrink-0 overflow-y-auto">
         
         {/* User's Identity Card (Name, Age, Gender) */}
         <div className="p-3.5 rounded-2xl glass-panel border border-purple-500/20 space-y-2">
@@ -598,57 +643,49 @@ export default function ChatPage() {
       <main className="flex-1 min-h-0 flex flex-col h-full bg-[#0a0a10] overflow-hidden">
         
         {/* Chat Topbar with Stranger's Name, Age & Gender Badge */}
-        <header className="h-16 px-4 sm:px-6 border-b border-white/5 bg-[#0d0d16]/80 backdrop-blur-md flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-base shadow-md shadow-purple-600/30">
+        <header className="h-14 sm:h-16 px-3 sm:px-6 border-b border-white/5 bg-[#0d0d16]/80 backdrop-blur-md flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md shadow-purple-600/30 shrink-0">
               {strangerProfile?.gender === "female" ? "👩" : strangerProfile?.gender === "other" ? "🌈" : "👤"}
             </div>
-            <div>
-              <h3 className="font-bold text-sm text-white flex items-center gap-2">
-                {strangerProfile ? (
-                  <>
-                    <span>{strangerProfile.name}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold">
-                      {strangerProfile.age} yrs · {getGenderEmoji(strangerProfile.gender)}
-                    </span>
-                  </>
-                ) : (
-                  <span>Stranger</span>
-                )}
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-sm text-white flex items-center gap-1.5 min-w-0">
+                <span className="truncate">{strangerProfile ? strangerProfile.name : "Stranger"}</span>
                 {status === "connected" && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 shrink-0">
                     Online
                   </span>
                 )}
               </h3>
-              <p className="text-xs text-slate-400">
-                {status === "connected"
-                  ? `Connected with ${strangerProfile?.name || "Stranger"} · Private conversation`
-                  : "Click 'Find Stranger' to connect"}
+              <p className="text-[11px] text-slate-400 truncate">
+                {strangerProfile
+                  ? `${strangerProfile.age} yrs · ${getGenderEmoji(strangerProfile.gender)} · Private`
+                  : "Tap Find to connect"}
               </p>
             </div>
           </div>
 
           {/* Quick Header Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {status === "connected" && callState === "idle" && (
               <button
                 onClick={startInChatCall}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
                 title="Personal Voice Call inside this chat (stays in chat)"
               >
-                <PhoneCall className="w-3.5 h-3.5" />
-                <span>Voice Call</span>
+                <PhoneCall className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Voice Call</span>
+                <span className="sm:hidden">Call</span>
               </button>
             )}
 
             {callState === "calling" && (
               <button
                 onClick={endInChatCall}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 text-yellow-300 text-xs font-semibold transition cursor-pointer animate-pulse"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 text-yellow-300 text-xs font-semibold transition cursor-pointer animate-pulse whitespace-nowrap"
                 title="Cancel Voice Call"
               >
-                <PhoneOff className="w-3.5 h-3.5" />
+                <PhoneOff className="w-3.5 h-3.5 shrink-0" />
                 <span>Calling...</span>
               </button>
             )}
@@ -656,17 +693,17 @@ export default function ChatPage() {
             {callState === "in-call" && (
               <button
                 onClick={endInChatCall}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-semibold transition cursor-pointer"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
                 title="End Voice Call"
               >
-                <PhoneOff className="w-3.5 h-3.5" />
-                <span>End Call</span>
+                <PhoneOff className="w-3.5 h-3.5 shrink-0" />
+                <span>End</span>
               </button>
             )}
 
             <button
               onClick={() => alert("User has been reported to moderation. Thank you for keeping TalkToStranger safe.")}
-              className="p-2 rounded-lg text-slate-400 hover:text-yellow-400 hover:bg-white/5 transition"
+              className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-yellow-400 hover:bg-white/5 transition"
               title="Report User"
             >
               <Flag className="w-4 h-4" />
@@ -677,7 +714,7 @@ export default function ChatPage() {
                 alert("User blocked.");
                 handleFindOrSkip();
               }}
-              className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition"
+              className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition"
               title="Block User"
             >
               <Ban className="w-4 h-4" />

@@ -1,4 +1,4 @@
-require('dotenv').config();
+try { require('dotenv').config(); } catch (_) {}
 
 const http = require('http');
 const next = require('next');
@@ -430,7 +430,7 @@ app.prepare().then(() => {
   });
 
   server.listen(port, host, () => {
-    console.log(`> ChatSphere server running on http://localhost:${port} with Real-Time WebSockets`);
+    console.log(`> TalkToStranger server running on http://localhost:${port} with Real-Time WebSockets`);
   });
 }).catch(err => {
   console.error('Error starting Next.js server:', err);
