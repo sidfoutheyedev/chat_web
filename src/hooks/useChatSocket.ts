@@ -93,9 +93,9 @@ export function useChatSocket({ mode, profile, roomId, onSignal, autoConnect = t
           case "matched": {
             setStatus("connected");
             setPartnerProfile(data.partnerProfile);
+            setIsPartnerTyping(false);
             setIsInitiator(!!data.initiator);
-            setMessages((prev) => [
-              ...prev,
+            setMessages([
               {
                 id: `sys-${Date.now()}`,
                 sender: "system",
