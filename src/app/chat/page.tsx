@@ -131,6 +131,7 @@ export default function ChatPage() {
   const recordedChunksRef = useRef<Blob[]>([]);
   const callPcRef = useRef<RTCPeerConnection | null>(null);
   const callStreamRef = useRef<MediaStream | null>(null);
+  const remoteCallStreamRef = useRef<MediaStream | null>(null);
   const remoteCallAudioRef = useRef<HTMLAudioElement | null>(null);
   const localCallVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteCallVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -170,6 +171,7 @@ export default function ChatPage() {
     if (remoteCallVideoRef.current) {
       remoteCallVideoRef.current.srcObject = null;
     }
+    remoteCallStreamRef.current = null;
     setCallState("idle");
     setCallType("audio");
     setIsCallMuted(false);
@@ -201,6 +203,7 @@ export default function ChatPage() {
     };
 
     pc.ontrack = (event) => {
+      remoteCallStreamRef.current = event.streams[0];
       if (remoteCallAudioRef.current) {
         remoteCallAudioRef.current.srcObject = event.streams[0];
       }
@@ -266,6 +269,18 @@ export default function ChatPage() {
       }
     }
   });
+
+  // Bind local/remote video streams reliably after <video> elements mount
+  useEffect(() => {
+    if (callState === "in-call" && callType === "video") {
+      if (localCallVideoRef.current && callStreamRef.current) {
+        localCallVideoRef.current.srcObject = callStreamRef.current;
+      }
+      if (remoteCallVideoRef.current && remoteCallStreamRef.current) {
+        remoteCallVideoRef.current.srcObject = remoteCallStreamRef.current;
+      }
+    }
+  }, [callState, callType]);
 
   // Clean up personal voice/video call if chat disconnects or partner changes
   useEffect(() => {
@@ -714,15 +729,17 @@ export default function ChatPage() {
                   <span className="hidden sm:inline">Voice Call</span>
                   <span className="sm:hidden">Call</span>
                 </button>
-                <button
-                  onClick={() => startInChatCall(true)}
-                  className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
-                  title="Personal Video Call inside this chat (stays in chat)"
-                >
-                  <Video className="w-3.5 h-3.5 shrink-0" />
-                  <span className="hidden sm:inline">Video Call</span>
-                  <span className="sm:hidden">Video</span>
-                </button>
+                {!roomId && (
+                  <button
+                    onClick={() => startInChatCall(true)}
+                    className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
+                    title="Personal Video Call inside this random chat (stays in chat)"
+                  >
+                    <Video className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Video Call</span>
+                    <span className="sm:hidden">Video</span>
+                  </button>
+                )}
               </>
             )}
 
@@ -804,7 +821,7 @@ export default function ChatPage() {
 
         {callState === "in-call" && callType === "video" && (
           <div className="p-2.5 sm:p-3 bg-[#0d0d16] border-b border-purple-500/20 shrink-0 space-y-2">
-            <div className="grid grid-cols-2 gap-2 h-44 sm:h-52">
+            <div className="grid grid-cols-2 gap-2 h-52 sm:h-64">
               <div className="relative rounded-xl bg-black border border-white/10 overflow-hidden">
                 <video
                   ref={remoteCallVideoRef}
