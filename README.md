@@ -124,17 +124,14 @@ chatweb/
 
 Jab aap apni website ko kisi custom domain (e.g. `https://yourdomain.com`) par deploy karein, toh in jagahon par domain update karein:
 
-1. **Environment Variable (Sitemap ke liye):**
-   `.env.local` (ya hosting platform ke environment variables) mein add karein:
+1. **Environment Variable (Site URL ke liye):**
+   Root `.env` (ya hosting platform ke environment variables) mein add/update karein:
    ```env
    NEXT_PUBLIC_SITE_URL=https://yourdomain.com
    ```
-   *(Ya directly `src/app/sitemap.ts` ki line 3 mein fallback URL change karein. Live sitemap `/sitemap.xml` par serve hota hai.)*
+   The same setting is used by the sitemap and OpenGraph metadata. Copy `.env.example` to `.env` for local setup.
 
-2. **OpenGraph Metadata (`src/app/layout.tsx`):**
-   Line 25 par `url: "https://chatsphere.com"` ko apne domain (`https://yourdomain.com`) se replace karein.
-
-3. **Contact Emails (Legal / Support Pages):**
+2. **Contact Emails (Legal / Support Pages):**
    - `src/app/privacy/page.tsx` (lines 107-108): `privacy@chatsphere.com` → apna email
    - `src/app/terms/page.tsx` (lines 62-63): `support@chatsphere.com` → apna email
    - `src/app/safety/page.tsx` (lines 116-117): `safety@chatsphere.com` → apna email
