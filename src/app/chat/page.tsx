@@ -8,6 +8,7 @@ import {
   MicOff,
   Square, 
   Video, 
+  VideoOff,
   PhoneCall, 
   PhoneOff,
   RotateCw, 
@@ -117,9 +118,11 @@ export default function ChatPage() {
   const [searchSeconds, setSearchSeconds] = useState(0);
   const [autoNext, setAutoNext] = useState(true);
 
-  // Personal in-chat voice call state (stays inside /chat, isolated from /voice pool)
+  // Personal in-chat voice/video call state (stays inside /chat, isolated from /voice & /video pools)
   const [callState, setCallState] = useState<"idle" | "calling" | "incoming" | "in-call">("idle");
+  const [callType, setCallType] = useState<"audio" | "video">("audio");
   const [isCallMuted, setIsCallMuted] = useState(false);
+  const [isCallCamOff, setIsCallCamOff] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -129,6 +132,8 @@ export default function ChatPage() {
   const callPcRef = useRef<RTCPeerConnection | null>(null);
   const callStreamRef = useRef<MediaStream | null>(null);
   const remoteCallAudioRef = useRef<HTMLAudioElement | null>(null);
+  const localCallVideoRef = useRef<HTMLVideoElement | null>(null);
+  const remoteCallVideoRef = useRef<HTMLVideoElement | null>(null);
 
   // Load user profile from localStorage (shared with voice/video pages)
   useEffect(() => {
@@ -159,13 +164,25 @@ export default function ChatPage() {
     if (remoteCallAudioRef.current) {
       remoteCallAudioRef.current.srcObject = null;
     }
+    if (localCallVideoRef.current) {
+      localCallVideoRef.current.srcObject = null;
+    }
+    if (remoteCallVideoRef.current) {
+      remoteCallVideoRef.current.srcObject = null;
+    }
     setCallState("idle");
+    setCallType("audio");
     setIsCallMuted(false);
+    setIsCallCamOff(false);
   };
 
-  const setupCallPeerConnection = async (sendOffer: boolean) => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const setupCallPeerConnection = async (sendOffer: boolean, withVideo: boolean) => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo });
     callStreamRef.current = stream;
+
+    if (withVideo && localCallVideoRef.current) {
+      localCallVideoRef.current.srcObject = stream;
+    }
 
     const pc = new RTCPeerConnection({
       iceServers: [
@@ -175,7 +192,7 @@ export default function ChatPage() {
     });
     callPcRef.current = pc;
 
-    stream.getAudioTracks().forEach((track) => pc.addTrack(track, stream));
+    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
@@ -187,12 +204,15 @@ export default function ChatPage() {
       if (remoteCallAudioRef.current) {
         remoteCallAudioRef.current.srcObject = event.streams[0];
       }
+      if (remoteCallVideoRef.current) {
+        remoteCallVideoRef.current.srcObject = event.streams[0];
+      }
     };
 
     if (sendOffer) {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      sendSignal({ kind: "call-sdp", sdp: offer });
+      sendSignal({ kind: "call-sdp", sdp: offer, withVideo });
     }
   };
 
@@ -217,52 +237,58 @@ export default function ChatPage() {
     onSignal: async (data) => {
       try {
         if (data?.kind === "call-request") {
+          setCallType(data.withVideo ? "video" : "audio");
           setCallState("incoming");
         } else if (data?.kind === "call-accept") {
+          const isVid = !!data.withVideo;
+          setCallType(isVid ? "video" : "audio");
           setCallState("in-call");
-          await setupCallPeerConnection(true);
+          await setupCallPeerConnection(true, isVid);
         } else if (data?.kind === "call-reject" || data?.kind === "call-end") {
           cleanupCall();
         } else if (data?.kind === "call-sdp") {
+          const isVid = !!data.withVideo || callType === "video";
           if (!callPcRef.current) {
-            await setupCallPeerConnection(false);
+            await setupCallPeerConnection(false, isVid);
           }
           if (!callPcRef.current) return;
           await callPcRef.current.setRemoteDescription(new RTCSessionDescription(data.sdp));
           if (data.sdp.type === "offer") {
             const answer = await callPcRef.current.createAnswer();
             await callPcRef.current.setLocalDescription(answer);
-            sendSignal({ kind: "call-sdp", sdp: answer });
+            sendSignal({ kind: "call-sdp", sdp: answer, withVideo: isVid });
           }
         } else if (data?.kind === "call-ice" && callPcRef.current) {
           await callPcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
         }
       } catch (err) {
-        console.warn("In-chat voice call signal error:", err);
+        console.warn("In-chat call signal error:", err);
       }
     }
   });
 
-  // Clean up personal voice call if chat disconnects or partner changes
+  // Clean up personal voice/video call if chat disconnects or partner changes
   useEffect(() => {
     if (status !== "connected") {
       cleanupCall();
     }
   }, [status]);
 
-  const startInChatCall = () => {
+  const startInChatCall = (withVideo: boolean) => {
     if (status !== "connected") return;
+    setCallType(withVideo ? "video" : "audio");
     setCallState("calling");
-    sendSignal({ kind: "call-request" });
+    sendSignal({ kind: "call-request", withVideo });
   };
 
   const acceptInChatCall = async () => {
+    const isVid = callType === "video";
     try {
       setCallState("in-call");
-      await setupCallPeerConnection(false);
-      sendSignal({ kind: "call-accept" });
+      await setupCallPeerConnection(false, isVid);
+      sendSignal({ kind: "call-accept", withVideo: isVid });
     } catch {
-      alert("Microphone access is required for voice call.");
+      alert(isVid ? "Camera & microphone access is required for video call." : "Microphone access is required for voice call.");
       rejectInChatCall();
     }
   };
@@ -284,6 +310,16 @@ export default function ChatPage() {
         t.enabled = !nextMuted;
       });
       setIsCallMuted(nextMuted);
+    }
+  };
+
+  const toggleCallCam = () => {
+    if (callStreamRef.current) {
+      const nextOff = !isCallCamOff;
+      callStreamRef.current.getVideoTracks().forEach((t) => {
+        t.enabled = !nextOff;
+      });
+      setIsCallCamOff(nextOff);
     }
   };
 
@@ -668,25 +704,36 @@ export default function ChatPage() {
           {/* Quick Header Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {status === "connected" && callState === "idle" && (
-              <button
-                onClick={startInChatCall}
-                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
-                title="Personal Voice Call inside this chat (stays in chat)"
-              >
-                <PhoneCall className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Voice Call</span>
-                <span className="sm:hidden">Call</span>
-              </button>
+              <>
+                <button
+                  onClick={() => startInChatCall(false)}
+                  className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
+                  title="Personal Voice Call inside this chat (stays in chat)"
+                >
+                  <PhoneCall className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Voice Call</span>
+                  <span className="sm:hidden">Call</span>
+                </button>
+                <button
+                  onClick={() => startInChatCall(true)}
+                  className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
+                  title="Personal Video Call inside this chat (stays in chat)"
+                >
+                  <Video className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Video Call</span>
+                  <span className="sm:hidden">Video</span>
+                </button>
+              </>
             )}
 
             {callState === "calling" && (
               <button
                 onClick={endInChatCall}
                 className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-yellow-500/15 hover:bg-yellow-500/25 border border-yellow-500/30 text-yellow-300 text-xs font-semibold transition cursor-pointer animate-pulse whitespace-nowrap"
-                title="Cancel Voice Call"
+                title="Cancel Call"
               >
                 <PhoneOff className="w-3.5 h-3.5 shrink-0" />
-                <span>Calling...</span>
+                <span>{callType === "video" ? "Video Calling..." : "Calling..."}</span>
               </button>
             )}
 
@@ -694,7 +741,7 @@ export default function ChatPage() {
               <button
                 onClick={endInChatCall}
                 className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs font-semibold transition cursor-pointer whitespace-nowrap"
-                title="End Voice Call"
+                title="End Call"
               >
                 <PhoneOff className="w-3.5 h-3.5 shrink-0" />
                 <span>End</span>
@@ -725,14 +772,20 @@ export default function ChatPage() {
         {/* Hidden audio element for personal in-chat WebRTC voice call */}
         <audio ref={remoteCallAudioRef} autoPlay />
 
-        {/* Incoming / Active Personal In-Chat Voice Call Banner */}
+        {/* Incoming / Active Personal In-Chat Voice & Video Call Banner */}
         {callState === "incoming" && (
           <div className="px-4 sm:px-6 py-2.5 bg-emerald-950/50 border-b border-emerald-500/30 flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-2 text-xs text-emerald-200 font-semibold">
-              <PhoneCall className="w-4 h-4 text-emerald-400 animate-bounce" />
-              <span>{strangerProfile?.name || "Stranger"} is calling you (Private in-chat voice call)</span>
+              {callType === "video" ? (
+                <Video className="w-4 h-4 text-purple-400 animate-bounce shrink-0" />
+              ) : (
+                <PhoneCall className="w-4 h-4 text-emerald-400 animate-bounce shrink-0" />
+              )}
+              <span>
+                {strangerProfile?.name || "Stranger"} is calling you (Private in-chat {callType === "video" ? "video" : "voice"} call)
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={acceptInChatCall}
                 className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer transition"
@@ -749,7 +802,63 @@ export default function ChatPage() {
           </div>
         )}
 
-        {callState === "in-call" && (
+        {callState === "in-call" && callType === "video" && (
+          <div className="p-2.5 sm:p-3 bg-[#0d0d16] border-b border-purple-500/20 shrink-0 space-y-2">
+            <div className="grid grid-cols-2 gap-2 h-44 sm:h-52">
+              <div className="relative rounded-xl bg-black border border-white/10 overflow-hidden">
+                <video
+                  ref={remoteCallVideoRef}
+                  autoPlay
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-cyan-300 font-semibold">
+                  {strangerProfile?.name || "Stranger"}
+                </span>
+              </div>
+              <div className="relative rounded-xl bg-black border border-white/10 overflow-hidden">
+                <video
+                  ref={localCallVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`absolute inset-0 w-full h-full object-cover -scale-x-100 ${isCallCamOff ? "hidden" : "block"}`}
+                />
+                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-purple-300 font-semibold">
+                  You
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={toggleCallMute}
+                className={`px-3 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer transition ${
+                  isCallMuted ? "bg-rose-500/20 text-rose-300" : "bg-white/10 text-slate-200 hover:bg-white/15"
+                }`}
+              >
+                {isCallMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                <span>{isCallMuted ? "Muted" : "Mic On"}</span>
+              </button>
+              <button
+                onClick={toggleCallCam}
+                className={`px-3 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer transition ${
+                  isCallCamOff ? "bg-rose-500/20 text-rose-300" : "bg-white/10 text-slate-200 hover:bg-white/15"
+                }`}
+              >
+                {isCallCamOff ? <VideoOff className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
+                <span>{isCallCamOff ? "Cam Off" : "Cam On"}</span>
+              </button>
+              <button
+                onClick={endInChatCall}
+                className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer transition"
+              >
+                End Video
+              </button>
+            </div>
+          </div>
+        )}
+
+        {callState === "in-call" && callType === "audio" && (
           <div className="px-4 sm:px-6 py-2 bg-emerald-950/40 border-b border-emerald-500/20 flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-2 text-xs text-emerald-300 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-dot" />
