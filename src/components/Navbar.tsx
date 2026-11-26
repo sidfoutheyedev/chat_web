@@ -40,8 +40,8 @@ export function Navbar() {
             <MessageSquare className="w-5 h-5 fill-white/20" />
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-1">
-              Chat<span className="text-neon-gradient">Sphere</span>
+            <span className="font-extrabold text-xl tracking-tight text-white flex items-center">
+              TalkTo<span className="text-neon-gradient">Stranger</span>
             </span>
           </div>
         </Link>

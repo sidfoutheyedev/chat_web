@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://chatsphere.com";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://talktostranger.online";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
@@ -26,6 +26,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${BASE_URL}/video`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/chatrooms`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.9,

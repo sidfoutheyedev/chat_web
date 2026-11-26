@@ -441,7 +441,7 @@ export default function HomePage() {
                 Built from the ground up for privacy &amp; peace of mind
               </h3>
               <p className="text-slate-300 text-sm sm:text-base max-w-xl">
-                ChatSphere conversations are peer-to-peer encrypted. We do not save your chats, we do not require your identity, and bad actors are swiftly blocked by automated moderation.
+                TalkToStranger conversations are peer-to-peer encrypted. We do not save your chats, we do not require your identity, and bad actors are swiftly blocked by automated moderation.
               </p>
             </div>
 

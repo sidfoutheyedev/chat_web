@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { ShieldCheck, Ban, Flag, Lock, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Safety Center & Rules | ChatSphere",
-  description: "Stay safe on ChatSphere. Learn how our instant reporting, 1-click block, and automated safety filters protect anonymous users.",
+  title: "Safety Center & Rules | TalkToStranger",
+  description: "Stay safe on TalkToStranger. Learn how our instant reporting, 1-click block, and automated safety filters protect anonymous users.",
 };
 
 export default function SafetyPage() {
@@ -20,7 +20,7 @@ export default function SafetyPage() {
           Your Safety is Our <span className="text-emerald-400">#1 Priority</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-400">
-          ChatSphere is built with multiple layers of proactive defense so you can communicate anonymously with confidence.
+          TalkToStranger is built with multiple layers of proactive defense so you can communicate anonymously with confidence.
         </p>
       </div>
 
@@ -102,7 +102,7 @@ export default function SafetyPage() {
             <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
             <div>
               <strong className="text-white block">Strictly 18+ Only</strong>
-              <span className="text-slate-400">Minors are prohibited from accessing ChatSphere services.</span>
+              <span className="text-slate-400">Minors are prohibited from accessing TalkToStranger services.</span>
             </div>
           </div>
         </div>
@@ -113,8 +113,8 @@ export default function SafetyPage() {
         <h3 className="text-lg font-bold text-white">Need to report an urgent safety concern?</h3>
         <p className="text-sm text-slate-400 max-w-xl mx-auto">
           Contact our Trust &amp; Safety team 24/7 at{" "}
-          <a href="mailto:safety@chatsphere.com" className="text-purple-400 underline font-semibold">
-            safety@chatsphere.com
+          <a href="mailto:safety@talktostranger.online" className="text-purple-400 underline font-semibold">
+            safety@talktostranger.online
           </a>
           . We review and act upon urgent safety reports within hours.
         </p>

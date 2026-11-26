@@ -3,8 +3,8 @@ import Link from "next/link";
 import { MessageSquare, Heart, Globe2, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Us | ChatSphere",
-  description: "Learn about ChatSphere, our mission to connect human beings across the world anonymously, safely, and effortlessly.",
+  title: "About Us | TalkToStranger",
+  description: "Learn about TalkToStranger, our mission to connect human beings across the world anonymously, safely, and effortlessly.",
 };
 
 export default function AboutPage() {
@@ -18,7 +18,7 @@ export default function AboutPage() {
           <span>Our Story &amp; Purpose</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-3">
-          About <span className="text-neon-gradient">ChatSphere</span>
+          About <span className="text-neon-gradient">TalkToStranger</span>
         </h1>
         <p className="text-sm sm:text-base text-slate-400">
           Reinventing spontaneous, genuine stranger conversation for the modern web.
@@ -36,7 +36,7 @@ export default function AboutPage() {
             Social media today is filled with algorithms, follower counts, and filtered personas. People rarely get to talk to real humans without preconceived expectations.
           </p>
           <p className="text-slate-300">
-            ChatSphere was created to revive the magic of spontaneous, anonymous human interaction. Whether you want to practice a foreign language, discuss anime, seek advice from someone across the globe, or just laugh during a late night, we provide the cleanest, safest, zero-friction canvas for that conversation to happen.
+            TalkToStranger was created to revive the magic of spontaneous, anonymous human interaction. Whether you want to practice a foreign language, discuss anime, seek advice from someone across the globe, or just laugh during a late night, we provide the cleanest, safest, zero-friction canvas for that conversation to happen.
           </p>
         </section>
 

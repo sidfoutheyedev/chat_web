@@ -14,7 +14,7 @@ export function Footer() {
                 <MessageSquare className="w-4 h-4" />
               </div>
               <span className="font-extrabold text-xl tracking-tight text-white">
-                Chat<span className="text-neon-gradient">Sphere</span>
+                TalkTo<span className="text-neon-gradient">Stranger</span>
               </span>
             </Link>
 
@@ -82,7 +82,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/about" className="hover:text-purple-400 transition">
-                  About ChatSphere
+                  About TalkToStranger
                 </Link>
               </li>
             </ul>
@@ -121,7 +121,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} ChatSphere. All rights reserved. Strictly 18+.</p>
+          <p>© {new Date().getFullYear()} TalkToStranger. All rights reserved. Strictly 18+.</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="hover:text-slate-400 transition">Privacy</Link>
             <Link href="/terms" className="hover:text-slate-400 transition">Terms</Link>

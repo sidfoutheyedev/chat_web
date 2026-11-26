@@ -122,6 +122,7 @@ export default function ChatPage() {
   const [isCallMuted, setIsCallMuted] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const recordIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -306,9 +307,12 @@ export default function ChatPage() {
     return () => clearInterval(t);
   }, [status]);
 
-  // Auto scroll
+  // Auto scroll inner messages container only (prevents outer page jump)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
   }, [messages, isTyping]);
 
   // Chat Duration Timer
@@ -432,7 +436,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden bg-[#09090f]">
+    <div className="flex-1 flex flex-col md:flex-row h-[calc(100dvh-64px)] overflow-hidden bg-[#09090f]">
       
       {/* Sidebar Controls */}
       <aside className="w-full md:w-80 bg-[#0d0d16] border-b md:border-b-0 md:border-r border-white/5 p-4 sm:p-5 flex flex-col gap-4 shrink-0 overflow-y-auto">
@@ -591,7 +595,7 @@ export default function ChatPage() {
       </aside>
 
       {/* Main Chat Canvas */}
-      <main className="flex-1 flex flex-col h-full bg-[#0a0a10]">
+      <main className="flex-1 min-h-0 flex flex-col h-full bg-[#0a0a10] overflow-hidden">
         
         {/* Chat Topbar with Stranger's Name, Age & Gender Badge */}
         <header className="h-16 px-4 sm:px-6 border-b border-white/5 bg-[#0d0d16]/80 backdrop-blur-md flex items-center justify-between shrink-0">
@@ -661,7 +665,7 @@ export default function ChatPage() {
             )}
 
             <button
-              onClick={() => alert("User has been reported to moderation. Thank you for keeping ChatSphere safe.")}
+              onClick={() => alert("User has been reported to moderation. Thank you for keeping TalkToStranger safe.")}
               className="p-2 rounded-lg text-slate-400 hover:text-yellow-400 hover:bg-white/5 transition"
               title="Report User"
             >
@@ -736,7 +740,7 @@ export default function ChatPage() {
         )}
 
         {/* Messages Stream */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 overscroll-contain">
           {messages.map((msg) => {
             if (msg.sender === "system") {
               return (
