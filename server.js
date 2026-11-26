@@ -1,8 +1,11 @@
+require('dotenv').config();
+
 const http = require('http');
 const next = require('next');
 const { Server: WebSocketServer } = require('ws');
 
 const port = parseInt(process.env.PORT || '3000', 10);
+const host = process.env.APP_HOST || '0.0.0.0';
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, dir: __dirname, webpack: true });
 const handle = app.getRequestHandler();
@@ -426,8 +429,8 @@ app.prepare().then(() => {
     });
   });
 
-  server.listen(port, () => {
-    console.log(`> TalkToStranger server running on http://localhost:${port} with Real-Time WebSockets`);
+  server.listen(port, host, () => {
+    console.log(`> ChatSphere server running on http://localhost:${port} with Real-Time WebSockets`);
   });
 }).catch(err => {
   console.error('Error starting Next.js server:', err);
