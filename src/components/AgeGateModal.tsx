@@ -37,7 +37,7 @@ export function AgeGateModal() {
         </h2>
 
         <p className="text-sm text-slate-300 leading-relaxed mb-6">
-          ChatSphere is designed strictly for adults. By clicking enter, you confirm that you are at least{" "}
+          TalkToStranger is designed strictly for adults. By clicking enter, you confirm that you are at least{" "}
           <strong className="text-purple-400">18 years of age</strong> and agree to our{" "}
           <Link href="/terms" className="text-cyan-400 underline hover:text-cyan-300">
             Terms of Service

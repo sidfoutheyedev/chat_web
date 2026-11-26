@@ -373,6 +373,7 @@ export default function RoomDetailPage() {
   const recordedChunksRef = useRef<Blob[]>([]);
   const recordTimerRef = useRef<NodeJS.Timeout | null>(null);
   const msgEndRef = useRef<HTMLDivElement>(null);
+  const msgContainerRef = useRef<HTMLDivElement>(null);
 
   // In-room Voice Call
   const [inVoiceCall, setInVoiceCall] = useState(false);
@@ -405,7 +406,10 @@ export default function RoomDetailPage() {
       }
       prevMsgLenRef.current = messages.length;
     }
-    msgEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = msgContainerRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
   }, [messages, chatOpen]);
 
   useEffect(() => {
@@ -730,8 +734,8 @@ export default function RoomDetailPage() {
 
           {/* Slide-in Group Chat Drawer (inside same room) */}
           {chatOpen && (
-            <div className="w-full sm:w-80 md:w-96 border-l border-white/[0.06] bg-[#101319] flex flex-col">
-              <div className="px-4 py-2.5 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="w-full sm:w-80 md:w-96 min-h-0 border-l border-white/[0.06] bg-[#101319] flex flex-col overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-white/[0.06] flex items-center justify-between shrink-0">
                 <span className="text-xs font-bold text-slate-200">Room Group Chat</span>
                 <button
                   onClick={() => setChatOpen(false)}
@@ -741,7 +745,7 @@ export default function RoomDetailPage() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+              <div ref={msgContainerRef} className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3 overscroll-contain">
                 {messages.map((msg) => {
                   if (msg.sender === "system") {
                     return (

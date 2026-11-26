@@ -188,20 +188,20 @@ export default function VideoPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-64px)] bg-[#07070b]">
+    <div className="flex-1 flex flex-col h-[calc(100dvh-64px)] overflow-hidden bg-[#07070b]">
       
       {/* Video Screens Split */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2 p-2 sm:p-4">
+      <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-2 p-2 sm:p-4">
         
         {/* Stranger's Video Frame */}
-        <div className="relative rounded-2xl bg-[#0f0f18] border border-white/5 overflow-hidden flex items-center justify-center">
+        <div className="relative h-full min-h-0 w-full rounded-2xl bg-[#0f0f18] border border-white/5 overflow-hidden flex items-center justify-center">
           
           {/* Real WebRTC Remote Video Stream */}
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
-            className={`w-full h-full object-cover ${status === "connected" ? "block" : "hidden"}`}
+            className={`absolute inset-0 w-full h-full object-contain bg-black ${status === "connected" ? "block" : "hidden"}`}
           />
 
           {status !== "connected" && (
@@ -228,13 +228,13 @@ export default function VideoPage() {
         </div>
 
         {/* My Video Preview */}
-        <div className="relative rounded-2xl bg-[#0f0f18] border border-white/5 overflow-hidden flex items-center justify-center">
+        <div className="relative h-full min-h-0 w-full rounded-2xl bg-[#0f0f18] border border-white/5 overflow-hidden flex items-center justify-center">
           <video
             ref={myVideoRef}
             autoPlay
             playsInline
             muted
-            className={`w-full h-full object-cover -scale-x-100 ${isCamOff ? "hidden" : "block"}`}
+            className={`absolute inset-0 w-full h-full object-contain bg-black -scale-x-100 ${isCamOff ? "hidden" : "block"}`}
           />
 
           {(!hasCamPermission || isCamOff) && (

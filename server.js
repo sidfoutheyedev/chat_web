@@ -429,6 +429,8 @@ app.prepare().then(() => {
     });
   });
 
+  server.listen(port, () => {
+    console.log(`> TalkToStranger server running on http://localhost:${port} with Real-Time WebSockets`);
   server.listen(port, host, () => {
     console.log(`> ChatSphere server running on http://localhost:${port} with Real-Time WebSockets`);
   });

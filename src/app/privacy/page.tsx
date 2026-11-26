@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { ShieldCheck, Lock, EyeOff } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | ChatSphere",
-  description: "Learn how ChatSphere protects user anonymity, handles zero message storage, and complies with Google AdSense and global privacy standards.",
+  title: "Privacy Policy | TalkToStranger",
+  description: "Learn how TalkToStranger protects user anonymity, handles zero message storage, and complies with Google AdSense and global privacy standards.",
 };
 
 export default function PrivacyPage() {
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         {/* Intro */}
         <section className="p-6 rounded-2xl bg-purple-950/20 border border-purple-500/20">
           <p className="font-medium text-purple-200">
-            ChatSphere is built on a strict <strong>Privacy-First &amp; Ephemeral Architecture</strong>. 
+            TalkToStranger is built on a strict <strong>Privacy-First &amp; Ephemeral Architecture</strong>. 
             We do not require accounts, we do not store chat logs, and your communications are deleted immediately when your connection closes.
           </p>
         </section>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-white">2. Ephemeral Chat Messages &amp; Audio Streams</h2>
           <p>
-            All text messages, voice calls, and video streams sent through ChatSphere are strictly peer-to-peer or transient socket relays. We do not record, archive, index, or sell any chat transcripts or audio recordings. Once you click &quot;Skip&quot; or close your tab, the session data ceases to exist on our servers.
+            All text messages, voice calls, and video streams sent through TalkToStranger are strictly peer-to-peer or transient socket relays. We do not record, archive, index, or sell any chat transcripts or audio recordings. Once you click &quot;Skip&quot; or close your tab, the session data ceases to exist on our servers.
           </p>
         </section>
 
@@ -58,7 +58,7 @@ export default function PrivacyPage() {
         <section className="space-y-3" id="cookies">
           <h2 className="text-xl font-bold text-white">3. Advertising &amp; Google AdSense Compliance</h2>
           <p>
-            ChatSphere displays third-party advertisements via Google AdSense to maintain free servers for users worldwide.
+            TalkToStranger displays third-party advertisements via Google AdSense to maintain free servers for users worldwide.
           </p>
           <ul className="list-disc pl-6 space-y-2 text-slate-400">
             <li>
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-white">4. Underage Users &amp; COPPA</h2>
           <p>
-            ChatSphere is strictly for users aged <strong>18 and older</strong>. We enforce an age gate upon entry. We do not knowingly permit minors to use this service. If we become aware that someone under 18 is accessing the platform, their access is terminated immediately.
+            TalkToStranger is strictly for users aged <strong>18 and older</strong>. We enforce an age gate upon entry. We do not knowingly permit minors to use this service. If we become aware that someone under 18 is accessing the platform, their access is terminated immediately.
           </p>
         </section>
 
@@ -104,8 +104,8 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-bold text-white">5. Contact Our Privacy Officer</h2>
           <p className="text-slate-400">
             For privacy inquiries, DMCA notices, or legal requests, reach out directly to:{" "}
-            <a href="mailto:privacy@chatsphere.com" className="text-purple-400 underline">
-              privacy@chatsphere.com
+            <a href="mailto:privacy@talktostranger.online" className="text-purple-400 underline">
+              privacy@talktostranger.online
             </a>
           </p>
         </section>

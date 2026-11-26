@@ -8,7 +8,7 @@ import { AgeGateModal } from "@/components/AgeGateModal";
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://chatsphere.com").replace(/\/+$/, "");
 
 export const metadata: Metadata = {
-  title: "ChatSphere - Talk to Strangers Online | Free Anonymous Chat & Voice",
+  title: "TalkToStranger - Talk to Strangers Online | Free Anonymous Chat & Voice",
   description: "Connect anonymously with real strangers worldwide across instant random text, HD voice call, video cam, and topic chat rooms. 100% free, no sign-up required.",
   keywords: [
     "talk to strangers",
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
     "omegle alternative",
     "free chat rooms"
   ],
-  authors: [{ name: "ChatSphere" }],
+  authors: [{ name: "TalkToStranger" }],
   openGraph: {
-    title: "ChatSphere - Anonymous Random Chat & Voice Calls",
+    title: "TalkToStranger - Anonymous Random Chat & Voice Calls",
     description: "Instant stranger matching with text, voice, video cam, and public rooms.",
     type: "website",
     url: SITE_URL,
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ChatSphere - Talk to Strangers Online",
+    title: "TalkToStranger - Talk to Strangers Online",
     description: "Free anonymous text, voice, and video chat with strangers worldwide.",
   },
   robots: {

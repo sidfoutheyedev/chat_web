@@ -27,7 +27,7 @@ export function SafeBanner() {
       <div className="flex items-center gap-2 mx-auto">
         <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
         <span>
-          <strong className="font-semibold text-emerald-300">ChatSphere is Safe:</strong>{" "}
+          <strong className="font-semibold text-emerald-300">TalkToStranger is Safe:</strong>{" "}
           100% SSL Encrypted · No Personal Info Required · Instant 1-Click Report &amp; Block
         </span>
       </div>
