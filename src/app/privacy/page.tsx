@@ -4,6 +4,9 @@ import { ShieldCheck, Lock, EyeOff } from "lucide-react";
 export const metadata: Metadata = {
   title: "Privacy Policy | TalkToStranger",
   description: "Learn how TalkToStranger protects user anonymity, handles zero message storage, and complies with Google AdSense and global privacy standards.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

@@ -4,6 +4,9 @@ import { ShieldCheck, Ban, Flag, Lock, AlertTriangle, CheckCircle2 } from "lucid
 export const metadata: Metadata = {
   title: "Safety Center & Rules | TalkToStranger",
   description: "Stay safe on TalkToStranger. Learn how our instant reporting, 1-click block, and automated safety filters protect anonymous users.",
+  alternates: {
+    canonical: "/safety",
+  },
 };
 
 export default function SafetyPage() {

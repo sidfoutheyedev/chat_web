@@ -5,6 +5,9 @@ import { MessageSquare, Heart, Globe2, ShieldCheck, ArrowRight } from "lucide-re
 export const metadata: Metadata = {
   title: "About Us | TalkToStranger",
   description: "Learn about TalkToStranger, our mission to connect human beings across the world anonymously, safely, and effortlessly.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

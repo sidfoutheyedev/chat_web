@@ -4,6 +4,9 @@ import { FileText, ShieldAlert, CheckCircle } from "lucide-react";
 export const metadata: Metadata = {
   title: "Terms of Service | TalkToStranger",
   description: "TalkToStranger terms and conditions for anonymous text, voice, and video chat.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {
