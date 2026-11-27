@@ -375,12 +375,14 @@ export default function ChatPage() {
     const prevHtmlScrollBehavior = html.style.scrollBehavior;
     const prevBodyOverflow = body.style.overflow;
     const prevBodyHeight = body.style.height;
+    const prevBodyMinHeight = body.style.minHeight;
     const prevBodyOverscroll = body.style.overscrollBehavior;
 
     html.style.overflow = "hidden";
     html.style.height = "100%";
     html.style.scrollBehavior = "auto";
     body.style.overflow = "hidden";
+    body.style.minHeight = "0px";
     body.style.overscrollBehavior = "none";
 
     const syncViewport = () => {
@@ -411,6 +413,7 @@ export default function ChatPage() {
       html.style.scrollBehavior = prevHtmlScrollBehavior;
       body.style.overflow = prevBodyOverflow;
       body.style.height = prevBodyHeight;
+      body.style.minHeight = prevBodyMinHeight;
       body.style.overscrollBehavior = prevBodyOverscroll;
     };
   }, []);
@@ -782,7 +785,7 @@ export default function ChatPage() {
       </aside>
 
       {/* Main Chat Canvas */}
-      <main className="flex-1 min-h-0 flex flex-col h-full bg-[#0a0a10] overflow-hidden">
+      <main className="flex-1 min-h-0 flex flex-col md:h-full bg-[#0a0a10] overflow-hidden">
         
         {/* Chat Topbar with Stranger's Name, Age & Gender Badge */}
         <header className="h-14 sm:h-16 px-3 sm:px-6 border-b border-white/5 bg-[#0d0d16] md:bg-[#0d0d16]/80 md:backdrop-blur-md flex items-center justify-between gap-2 shrink-0">

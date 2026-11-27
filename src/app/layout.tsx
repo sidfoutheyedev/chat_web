@@ -66,7 +66,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark scroll-smooth">
-      <body className="min-h-screen flex flex-col bg-[#09090f] text-slate-100 antialiased selection:bg-purple-600 selection:text-white">
+      <body className="min-h-dvh flex flex-col bg-[#09090f] text-slate-100 antialiased selection:bg-purple-600 selection:text-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
