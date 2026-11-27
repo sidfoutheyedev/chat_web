@@ -1,11 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SafeBanner } from "@/components/SafeBanner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AgeGateModal } from "@/components/AgeGateModal";
+import { PwaRegister } from "@/components/PwaRegister";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://talktostranger.online").replace(/\/+$/, "");
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#09090f",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -43,6 +50,14 @@ export const metadata: Metadata = {
   verification: {
     google: "y1ffNa40I7leuXaeNJR1ZcMiWKOuY2w5qU0eAjMeNZs",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "TalkToStranger",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 const jsonLd = {
@@ -78,6 +93,7 @@ export default function RootLayout({
         </div>
         <Footer />
         <AgeGateModal />
+        <PwaRegister />
       </body>
     </html>
   );
