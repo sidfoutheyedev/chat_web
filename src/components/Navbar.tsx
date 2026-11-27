@@ -15,6 +15,7 @@ import {
   Radio
 } from "lucide-react";
 import { useLiveCounter } from "@/hooks/useLiveCounter";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -90,6 +91,8 @@ export function Navbar() {
             <span><strong className="text-emerald-400 font-bold">{online.toLocaleString()}</strong> online</span>
           </div>
 
+          <InstallAppButton variant="compact" />
+
           {/* Quick Launch CTA */}
           <Link
             href="/chat"
@@ -101,11 +104,15 @@ export function Navbar() {
         </div>
 
         {/* Mobile Hamburger Button */}
-        <div className="flex lg:hidden items-center gap-2 shrink-0">
+        <div className="flex lg:hidden items-center gap-1.5 shrink-0">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-medium text-slate-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-dot"></span>
             <span className="text-emerald-400 font-semibold">{online.toLocaleString()}</span>
           </div>
+
+          <span className="sm:hidden">
+            <InstallAppButton variant="compact" />
+          </span>
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -182,10 +189,12 @@ export function Navbar() {
             );
           })}
 
+          <InstallAppButton variant="drawer" />
+
           <Link
             href="/chat"
             onClick={() => setMobileMenuOpen(false)}
-            className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-cyan-500"
+            className="mt-1 flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-cyan-500"
           >
             <Sparkles className="w-4 h-4" />
             <span>Start Anonymous Chat</span>

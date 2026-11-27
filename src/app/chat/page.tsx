@@ -1059,18 +1059,6 @@ export default function ChatPage() {
                   You are in the live queue. As soon as another user joins from anywhere, you will connect instantly!
                 </p>
               </div>
-
-              {searchSeconds >= 3 && (
-                <div className="pt-3 border-t border-white/5 w-full space-y-2 text-left">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-300">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Want to test real matching right now?</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Open a 2nd tab or Incognito window at <code className="text-cyan-200 bg-white/5 px-1 py-0.5 rounded font-mono">http://localhost:3000/chat</code> with a different name. Both tabs will instantly connect to each other!
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
