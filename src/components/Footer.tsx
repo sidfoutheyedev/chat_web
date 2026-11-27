@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { MessageSquare, ShieldCheck, Lock, Heart } from "lucide-react";
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname === "/chat") return null;
+
   return (
     <footer className="w-full bg-[#07070b] border-t border-white/5 pt-16 pb-12 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

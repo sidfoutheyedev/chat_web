@@ -30,6 +30,14 @@ export function Navbar() {
     { name: "Safety", href: "/safety", icon: ShieldCheck },
   ];
 
+  const mobileModeTabs = [
+    { name: "Text", href: "/chat", icon: MessageSquare },
+    { name: "Voice", href: "/voice", icon: Mic, live: true },
+    { name: "Video", href: "/video", icon: Video },
+    { name: "City", href: "/chatrooms", icon: Radio },
+    { name: "Rooms", href: "/rooms", icon: Compass },
+  ];
+
   return (
     <nav className="sticky top-0 z-40 w-full bg-[#09090f]/90 backdrop-blur-md border-b border-white/5 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -108,6 +116,39 @@ export function Navbar() {
           </button>
         </div>
 
+      </div>
+
+      {/* Mobile-Only Top Mode Strip */}
+      <div className="lg:hidden border-t border-white/5 bg-[#09090f]/95 px-3 py-1.5 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 min-w-max">
+          {mobileModeTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive =
+              tab.href === "/chatrooms"
+                ? pathname.startsWith("/chatrooms")
+                : pathname === tab.href;
+
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-cyan-500 text-white shadow-sm"
+                    : "bg-white/[0.04] border border-white/10 text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : tab.live ? "text-cyan-400" : "text-purple-400"}`} />
+                <span>{tab.name}</span>
+                {tab.live && !isActive && (
+                  <span className="text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 leading-none">
+                    Live
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {/* Mobile Drawer */}

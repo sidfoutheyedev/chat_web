@@ -126,6 +126,9 @@ export default function ChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isSendingTypingRef = useRef(false);
   const recordIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -282,10 +285,15 @@ export default function ChatPage() {
     }
   }, [callState, callType]);
 
-  // Clean up personal voice/video call if chat disconnects or partner changes
+  // Clean up personal voice/video call and typing timer if chat disconnects or partner changes
   useEffect(() => {
     if (status !== "connected") {
       cleanupCall();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      isSendingTypingRef.current = false;
     }
   }, [status]);
 
@@ -358,11 +366,62 @@ export default function ChatPage() {
     return () => clearInterval(t);
   }, [status]);
 
+  // Lock outer document scroll & sync height with mobile visualViewport so header/call bar never scroll off-screen
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevHtmlHeight = html.style.height;
+    const prevHtmlScrollBehavior = html.style.scrollBehavior;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyHeight = body.style.height;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+
+    html.style.overflow = "hidden";
+    html.style.height = "100%";
+    html.style.scrollBehavior = "auto";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+
+    const syncViewport = () => {
+      const vv = window.visualViewport;
+      const height = vv ? vv.height : window.innerHeight;
+      body.style.height = `${Math.round(height)}px`;
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+      const el = messagesContainerRef.current;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    };
+
+    syncViewport();
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", syncViewport);
+    vv?.addEventListener("scroll", syncViewport);
+    window.addEventListener("resize", syncViewport);
+
+    return () => {
+      vv?.removeEventListener("resize", syncViewport);
+      vv?.removeEventListener("scroll", syncViewport);
+      window.removeEventListener("resize", syncViewport);
+      html.style.overflow = prevHtmlOverflow;
+      html.style.height = prevHtmlHeight;
+      html.style.scrollBehavior = prevHtmlScrollBehavior;
+      body.style.overflow = prevBodyOverflow;
+      body.style.height = prevBodyHeight;
+      body.style.overscrollBehavior = prevBodyOverscroll;
+    };
+  }, []);
+
   // Auto scroll inner messages container only (prevents outer page jump)
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
     }
   }, [messages, isTyping]);
 
@@ -427,17 +486,49 @@ export default function ChatPage() {
       return;
     }
 
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    if (isSendingTypingRef.current) {
+      isSendingTypingRef.current = false;
+      sendTyping(false);
+    }
+
     sendMessage(text);
     setInput("");
-    sendTyping(false);
+    inputRef.current?.focus();
   };
 
-  // Handle typing debounce
+  // Handle typing debounce (avoids spamming WebSocket & flickering typing indicator)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-    sendTyping(true);
-    setTimeout(() => {
+    const val = e.target.value;
+    setInput(val);
+
+    if (!val.trim()) {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (isSendingTypingRef.current) {
+        isSendingTypingRef.current = false;
+        sendTyping(false);
+      }
+      return;
+    }
+
+    if (!isSendingTypingRef.current) {
+      isSendingTypingRef.current = true;
+      sendTyping(true);
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      isSendingTypingRef.current = false;
       sendTyping(false);
+      typingTimeoutRef.current = null;
     }, 2000);
   };
 
@@ -487,7 +578,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="w-full flex flex-col md:flex-row h-[calc(100dvh-104px)] min-h-[480px] shrink-0 overflow-hidden bg-[#09090f]">
+    <div className="w-full flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden bg-[#09090f]">
 
       {/* Mobile Compact Control Strip (keeps 85%+ screen for chat on phones) */}
       <div className="md:hidden bg-[#0d0d16] border-b border-white/5 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
@@ -694,7 +785,7 @@ export default function ChatPage() {
       <main className="flex-1 min-h-0 flex flex-col h-full bg-[#0a0a10] overflow-hidden">
         
         {/* Chat Topbar with Stranger's Name, Age & Gender Badge */}
-        <header className="h-14 sm:h-16 px-3 sm:px-6 border-b border-white/5 bg-[#0d0d16]/80 backdrop-blur-md flex items-center justify-between gap-2 shrink-0">
+        <header className="h-14 sm:h-16 px-3 sm:px-6 border-b border-white/5 bg-[#0d0d16] md:bg-[#0d0d16]/80 md:backdrop-blur-md flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md shadow-purple-600/30 shrink-0">
               {strangerProfile?.gender === "female" ? "👩" : strangerProfile?.gender === "other" ? "🌈" : "👤"}
@@ -1012,20 +1103,22 @@ export default function ChatPage() {
               </div>
             ) : (
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={handleInputChange}
                 placeholder={status === "connected" ? `Message ${strangerProfile?.name || "Stranger"}... (Press Enter)` : "Find a stranger first to start chatting..."}
                 disabled={status !== "connected"}
-                className="flex-1 px-4 py-3 rounded-xl bg-[#141420] border border-white/5 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition disabled:opacity-50"
+                className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-[#141420] border border-white/5 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors disabled:opacity-50"
               />
             )}
 
             {/* Send Button */}
             <button
               type="submit"
+              onMouseDown={(e) => e.preventDefault()}
               disabled={status !== "connected" || !input.trim()}
-              className="p-3 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 disabled:opacity-40 text-white transition glow-btn cursor-pointer shrink-0"
+              className="p-3 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 disabled:opacity-40 text-white transition-opacity glow-btn cursor-pointer shrink-0"
               title="Send"
             >
               <Send className="w-5 h-5" />
